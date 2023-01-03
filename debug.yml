@@ -1,0 +1,20 @@
+---
+- name: Debug testing
+  hosts: all
+  become: yes
+
+  tasks:
+    - name:  Debug for node exporters
+      ansible.builtin.debug:
+        msg: "Node has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      with_items: "{{ groups['node_exporter'] }}"
+
+    - name: Debug for libvirt exporters
+      ansible.builtin.debug:
+        msg: "Libvirt has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      with_items: "{{ groups['libvirt_exporter'] }}"
+
+    - name: Debug for prometheus
+      ansible.builtin.debug:
+        msg: "Prometheus has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+      with_items: "{{ groups['prometheus'] }}"

@@ -1,0 +1,114 @@
+---
+
+- name: Deploy node exporter
+  hosts: node_exporter
+  become: yes
+
+#  pre_tasks:
+#    - setup:
+#      register: node_facts
+#
+#    - ansible.builtin.debug:
+#        msg: Node facts are {{ node_facts }}
+
+  tasks:
+    - name: Run node exporter container
+      containers.podman.podman_container:
+        name: node-exporter-ansible
+        image: quay.io/prometheus/node-exporter
+        state: started
+        ports:
+          - "9100:9100"
+        #volumes:
+        #  - "/etc/prometheus.d:/etc/prometheus.d"
+
+- name: Deploy libvirt exporter
+  hosts: libvirt_exporter
+  become: yes
+
+  tasks:
+
+    - name: Install policy tools
+      yum: pkg=policycoreutils-python-utils
+           state=installed
+    
+    - name: Remove SELinux policy package
+      command: semodule -r ansible-libvirtexporter
+      failed_when: false
+    
+    - name: Copy SELinux type enforcement file
+      copy: src=ansible-libvirtexporter.te
+            dest=/tmp/
+    
+    - name: Compile SELinux module file
+      command: checkmodule -M -m -o /tmp/ansible-libvirtexporter.mod /tmp/ansible-libvirtexporter.te
+    
+    - name: Build SELinux policy package
+      command: semodule_package -o /tmp/ansible-libvirtexporter.pp -m /tmp/ansible-libvirtexporter.mod
+    
+    - name: Load SELinux policy package
+      command: semodule -i /tmp/ansible-libvirtexporter.pp
+    
+    - name: Remove temporary files
+      file: path=/tmp/ansible-libvirtexporter.*
+            state=absent
+
+    - name: Run libvirt exporter container
+      containers.podman.podman_container:
+        name: libvirt-exporter-ansible
+        image: docker.io/alekseizakharov/libvirt-exporter
+        state: started
+        ports:
+          - "9177:9177"
+        volume:
+          - "/var/run/libvirt:/var/run/libvirt:z"
+
+- name: Deploy prometheus alertmanager
+  hosts: alertmanager
+  become: yes
+
+  tasks:
+    - name: Run prometheus container
+      containers.podman.podman_container:
+        name: alertmanager-ansible
+        image: quay.io/prometheus/alertmanager
+        state: started
+        ports:
+          - "9093:9093"
+
+- name: Deploy prometheus
+  hosts: prometheus
+  become: yes
+
+  tasks:
+    - name: Create prometheus config dir
+      ansible.builtin.file:
+        path: /etc/prometheus
+        state: directory
+        mode: '0755'
+
+    - name: create prometheus template file
+      template: src=prometheus.j2 dest=/etc/prometheus/prometheus.yml
+
+    - name: Run prometheus container
+      containers.podman.podman_container:
+        name: prometheus-ansible
+        image: quay.io/prometheus/prometheus
+        state: started
+        ports:
+          - "9090:9090"
+        volume:
+          - "/etc/prometheus:/etc/prometheus"
+
+- name: Deploy grafana
+  hosts: grafana
+  become: yes
+
+  tasks:
+    - name: Run grafana container
+      containers.podman.podman_container:
+        name: grafana-ansible
+        image: docker.io/grafana/grafana
+        state: started
+        ports:
+          - "3000:3000"

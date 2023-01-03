@@ -1,0 +1,19 @@
+
+module ansible-libvirtexporter 1.0;
+
+require {
+	type virtd_t;
+	type virt_var_run_t;
+	type container_t;
+	type kernel_t;
+	class system module_request;
+	class sock_file write;
+	class unix_stream_socket connectto;
+}
+
+#============= container_t ==============
+
+#!!!! This avc can be allowed using the boolean 'domain_kernel_load_modules'
+allow container_t kernel_t:system module_request;
+allow container_t virt_var_run_t:sock_file write;
+allow container_t virtd_t:unix_stream_socket connectto;

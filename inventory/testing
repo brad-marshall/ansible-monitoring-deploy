@@ -1,0 +1,14 @@
+[prometheus]
+bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+
+[alertmanager]
+bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+
+[grafana]
+bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+
+[node_exporter]
+bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+
+[libvirt_exporter]
+bradm-laptop ansible_host=192.168.122.1 ansible_user=brmarsha
