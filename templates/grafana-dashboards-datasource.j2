@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+{% for host in groups['prometheus'] %}
+- name: Prometheus - {{ hostvars[host]['ansible_hostname'] }}
+  orgId: 1
+  folder: ''
+  type: file
+  disableDeletion: false
+  editable: true
+  options:
+    path: /etc/grafana/provisioning/dashboards
+{% endfor %}

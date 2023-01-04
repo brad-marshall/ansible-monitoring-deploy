@@ -17,6 +17,9 @@ https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/
 
 # Add a data source
 https://grafana.com/docs/grafana/latest/administration/provisioning/
+https://github.com/vegasbrianc/prometheus/blob/master/grafana/provisioning/datasources/datasource.yml
+
+https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards
 
 # Ansible collections
 
@@ -29,6 +32,5 @@ https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#installing-collec
 community.grafana
 
 https://docs.ansible.com/ansible/latest/collections/community/grafana/index.html
-
 
 
