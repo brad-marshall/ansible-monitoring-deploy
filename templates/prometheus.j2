@@ -4,6 +4,7 @@ global:
   evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
   # scrape_timeout is set to the global default (10s).
 
+{% if groups['alertmanager']|length > 0 %}
 # Alertmanager configuration
 alerting:
   alertmanagers:
@@ -13,6 +14,7 @@ alerting:
           - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9093
 {% endfor %}
           # - alertmanager:9093
+{% endif %}
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
@@ -35,27 +37,34 @@ scrape_configs:
    #prometheus {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 
+{% if groups['node_exporter']|length > 0 %}
   - job_name: "node_exporter"
     static_configs:
       - targets:
 {% for host in groups['node_exporter'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9100
 {% endfor %}
+{% endif %}
 
+{% if groups['libvirt_exporter']|length > 0 %}
   - job_name: "libvirt_exporter"
     static_configs:
       - targets:
 {% for host in groups['libvirt_exporter'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9177
 {% endfor %}
+{% endif %}
 
+{% if groups['podman_exporter']|length > 0 %}
   - job_name: "podman_exporter"
     static_configs:
       - targets:
 {% for host in groups['podman_exporter'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9882
 {% endfor %}
+{% endif %}
 
+{% if groups['redfish_exporter']|length > 0 %}
   - job_name: 'redfish-exporter'
     honor_labels: true
     # metrics_path defaults to '/metrics'
@@ -77,4 +86,5 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: {{ hostvars[groups['prometheus'][0]]['ansible_host'] }}:9220
+{% endif %}
 

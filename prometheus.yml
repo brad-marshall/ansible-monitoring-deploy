@@ -159,6 +159,7 @@
     - name: create prometheus template file
       template: src=prometheus.j2 dest=/etc/prometheus/prometheus.yml
       tags: prometheus
+      notify: Restart Prometheus
 
     - name: Run prometheus container
       containers.podman.podman_container:
@@ -170,6 +171,14 @@
         volume:
           - "/etc/prometheus:/etc/prometheus"
       tags: prometheus
+
+  handlers:
+    - name: Restart Prometheus
+      containers.podman.podman_container:
+        name: prometheus-ansible
+        image: quay.io/prometheus/prometheus
+        state: started
+        restart: yes
 
 - name: Deploy grafana
   hosts: grafana
@@ -192,10 +201,12 @@
     - name: create grafana prometheus datasource template file
       template: src=grafana-prometheus-datasource.j2 dest=/etc/grafana/provisioning/datasources/prometheus.yml
       tags: grafana
+      notify: Restart Grafana
 
     - name: create grafana prometheus dashboards template file
       template: src=grafana-dashboards-datasource.j2 dest=/etc/grafana/provisioning/dashboards/dashboard.yml
       tags: grafana
+      notify: Restart Grafana
 
     - name: sync grafana dashboards
       become: no
@@ -204,6 +215,7 @@
         dest: /etc/grafana/provisioning/
         times: false
       tags: grafana
+      notify: Restart Grafana
 
     - name: Run grafana container
       containers.podman.podman_container:
@@ -217,3 +229,11 @@
           - "/etc/grafana/provisioning/datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
           - "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
       tags: grafana
+
+  handlers:
+    - name: Restart Grafana
+      containers.podman.podman_container:
+        name: grafana-ansible
+        image: docker.io/grafana/grafana
+        state: started
+        restart: yes
