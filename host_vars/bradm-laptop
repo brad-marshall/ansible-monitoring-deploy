@@ -1,0 +1,5 @@
+---
+ipmi_ip: 192.168.122.1:8443
+ansible_host: 192.168.122.1
+ansible_user: brmarsha
+

@@ -1,14 +1,21 @@
 [prometheus]
-bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+bradm-rhel8-vm
 
 [alertmanager]
-bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+bradm-rhel8-vm
 
 [grafana]
-bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+bradm-rhel8-vm
 
 [node_exporter]
-bradm-rhel8-vm ansible_host=192.168.122.169 ansible_user=bmarshall
+bradm-rhel8-vm
+bradm-laptop
 
 [libvirt_exporter]
-bradm-laptop ansible_host=192.168.122.1 ansible_user=brmarsha
+bradm-laptop
+
+[podman_exporter]
+bradm-rhel8-vm
+
+[redfish_exporter]
+bradm-laptop

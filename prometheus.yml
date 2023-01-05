@@ -72,12 +72,70 @@
           - "/var/run/libvirt:/var/run/libvirt:z"
       tags: exporter
 
+- name: Deploy podman exporter
+  hosts: podman_exporter
+  become: yes
+
+# https://github.com/containers/prometheus-podman-exporter/blob/main/install.md#container-image
+# # podman run -e CONTAINER_HOST=unix:///run/podman/podman.sock -v /run/podman/podman.sock:/run/podman/podman.sock -u root --security-opt label=disable quay.io/navidys/prometheus-podman-exporter
+
+  tasks:
+    - name: Enable podman socket
+      ansible.builtin.systemd:
+        name: podman.socket
+        state: started
+        enabled: yes
+      tags: podman
+
+    - name: Run podman exporter container
+      containers.podman.podman_container:
+        name: podman-exporter-ansible
+        image: quay.io/navidys/prometheus-podman-exporter
+        state: started
+        security_opt: label=disable
+        user: root
+        ports:
+          - "9882:9882"
+        volume:
+          - "/run/podman/podman.sock:/run/podman/podman.sock"
+        env:
+          CONTAINER_HOST: "unix:///run/podman/podman.sock"
+      tags: podman
+
+- name: Deploy redfish exporter
+  hosts: prometheus
+  become: yes
+
+  tasks:
+    - name: Create prometheus config dir
+      ansible.builtin.file:
+        path: /etc/prometheus
+        state: directory
+        mode: '0755'
+      tags: exporter
+
+    - name: create redfish template file
+      template: src=redfish-config.j2 dest=/etc/prometheus/redfish-config.yml
+      tags: exporter
+
+    - name: Run redfish exporter container
+      containers.podman.podman_container:
+        name: redfish-exporter-ansible
+        image: docker.io/bradmarshall/sapcc-redfish-exporter
+        state: started
+        command: "/redfish_exporter/redfish-exporter.sh -l /var/log/redfish-exporter.log -d"
+        ports:
+          - "9220:9220"
+        volumes:
+          - "/etc/prometheus/redfish-config.yml:/redfish_exporter/config.yml"
+      tags: exporter
+
 - name: Deploy prometheus alertmanager
   hosts: alertmanager
   become: yes
 
   tasks:
-    - name: Run prometheus container
+    - name: Run alertmanager container
       containers.podman.podman_container:
         name: alertmanager-ansible
         image: quay.io/prometheus/alertmanager
