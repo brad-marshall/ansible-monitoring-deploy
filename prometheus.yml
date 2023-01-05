@@ -85,7 +85,7 @@
         name: podman.socket
         state: started
         enabled: yes
-      tags: podman
+      tags: exporter
 
     - name: Run podman exporter container
       containers.podman.podman_container:
@@ -100,7 +100,7 @@
           - "/run/podman/podman.sock:/run/podman/podman.sock"
         env:
           CONTAINER_HOST: "unix:///run/podman/podman.sock"
-      tags: podman
+      tags: exporter
 
 - name: Deploy redfish exporter
   hosts: prometheus
