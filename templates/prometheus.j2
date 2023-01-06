@@ -18,6 +18,13 @@ alerting:
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
+{% if groups['alertmanager']|length > 0 %}
+    - /etc/prometheus/prometheus-exporter.yml
+{% if groups['node_exporter']|length > 0 %}
+    - /etc/prometheus/node-exporter.yml
+{% endif %}
+{% endif %}
+
   # - "first_rules.yml"
   # - "second_rules.yml"
 

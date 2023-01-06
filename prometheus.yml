@@ -161,6 +161,22 @@
       tags: prometheus
       notify: Restart Prometheus
 
+    - name: copy prometheus alertmanager rules
+      ansible.builtin.copy:
+        src: files/alertmanager/prometheus-exporter.yml
+        dest: /etc/prometheus/prometheus-exporter.yml
+        mode: '0644'
+      tags: prometheus
+      notify: Restart Prometheus
+
+    - name: copy node exporter alertmanager rules
+      ansible.builtin.copy:
+        src: files/alertmanager/node-exporter.yml
+        dest: /etc/prometheus/node-exporter.yml
+        mode: '0644'
+      tags: prometheus
+      notify: Restart Prometheus
+
     - name: Run prometheus container
       containers.podman.podman_container:
         name: prometheus-ansible
