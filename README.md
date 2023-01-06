@@ -16,6 +16,7 @@ node_exporter
 libvirt_exporter
 podman_exporter
 redfish_exporter
+haproxy_exporter
 
 # Tags
 
@@ -49,6 +50,16 @@ Alertmanager is deployed, but currently doesn't have any alerting rules.  This i
 * Work out how to have different ipmi credentials for redfish exporter
 * Better handling of multiple prometheus servers - ie redfish exporter is hard coded to first prometheus host IP
 * Better docs and how to use
+
+## Exporters
+
+* Finish haproxy
+* Rabbitmq
+* Mysql / galera
+* Pacemaker
+* Rabbitmq
+* Openstack
+* Ceph
 
 # Notes and References
 

@@ -19,3 +19,6 @@ bradm-rhel8-vm
 
 [redfish_exporter]
 bradm-laptop
+
+[haproxy_exporter]
+bradm-laptop

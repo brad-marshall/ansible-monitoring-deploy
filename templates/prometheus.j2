@@ -71,6 +71,15 @@ scrape_configs:
 {% endfor %}
 {% endif %}
 
+{% if groups['haproxy_exporter']|length > 0 %}
+  - job_name: "haproxy_exporter"
+    static_configs:
+      - targets:
+{% for host in groups['haproxy_exporter'] %}
+        - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9101
+{% endfor %}
+{% endif %}
+
 {% if groups['redfish_exporter']|length > 0 %}
   - job_name: 'redfish-exporter'
     honor_labels: true

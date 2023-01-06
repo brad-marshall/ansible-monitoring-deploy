@@ -130,6 +130,22 @@
           - "/etc/prometheus/redfish-config.yml:/redfish_exporter/config.yml"
       tags: exporter
 
+- name: Deploy haproxy exporter
+  hosts: haproxy_exporter
+  become: yes
+
+  tasks:
+    - name: Run haproxy exporter container
+      containers.podman.podman_container:
+        name: haproxy-exporter-ansible
+        image: docker.io/prom/haproxy-exporter
+        state: started
+        # This assumes the scrape uri is http://<ip>/haproxy?stats;csv - change if its not
+        command: "--haproxy.scrape-uri=http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/haproxy?stats;csv"
+        ports:
+          - "9101:9101"
+      tags: exporter, haproxy
+
 - name: Deploy prometheus alertmanager
   hosts: alertmanager
   become: yes
