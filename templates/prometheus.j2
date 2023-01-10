@@ -104,3 +104,8 @@ scrape_configs:
         replacement: {{ hostvars[groups['prometheus'][0]]['ansible_host'] }}:9220
 {% endif %}
 
+{% if groups['thanos']|length > 0 %}
+remote_write:
+- url: http://{{ hostvars[groups['thanos'][0]]['ansible_host'] }}:10908/api/v1/receive
+{% endif %}
+
