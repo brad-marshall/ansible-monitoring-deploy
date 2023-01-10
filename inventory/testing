@@ -22,3 +22,9 @@ bradm-laptop
 
 [haproxy_exporter]
 bradm-laptop
+
+[thanos]
+bradm-monitoring-vm
+
+[minio]
+bradm-monitoring-vm

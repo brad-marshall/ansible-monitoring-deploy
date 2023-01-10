@@ -1,0 +1,5 @@
+---
+# file: /etc/ansible/group_vars/all
+# this is the site wide default
+minio_access_key: EXAMPLEKEY
+minio_secret_key: SECRETKEY

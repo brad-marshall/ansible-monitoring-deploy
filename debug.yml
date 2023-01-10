@@ -3,6 +3,7 @@
   hosts: all
   become: yes
 
+
   tasks:
     - name:  Debug for node exporters
       ansible.builtin.debug:
@@ -23,3 +24,15 @@
       ansible.builtin.debug:
         msg: "Prometheus has {{ hostvars[item] }}"
       with_items: "{{ groups['prometheus'] }}"
+
+    - name: debug of literal multiline
+      vars:
+        test: |
+          sh -c 'sh -s << EOF
+          mc config host add tmp
+          mc mb tmp/thanos
+          mc config host rm tmp
+          sleep 10000000
+          EOF'
+      debug:
+        var: test

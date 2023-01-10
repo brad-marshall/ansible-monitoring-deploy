@@ -1,5 +1,6 @@
 ---
 
+##### EXPORTERS #####
 - name: Deploy node exporter
   hosts: node_exporter
   become: yes
@@ -33,29 +34,29 @@
       yum: pkg=policycoreutils-python-utils
            state=installed
       tags: exporter
-    
+
     - name: Remove SELinux policy package
       command: semodule -r ansible-libvirtexporter
       failed_when: false
       tags: exporter
-    
+
     - name: Copy SELinux type enforcement file
       copy: src=ansible-libvirtexporter.te
             dest=/tmp/
       tags: exporter
-    
+ 
     - name: Compile SELinux module file
       command: checkmodule -M -m -o /tmp/ansible-libvirtexporter.mod /tmp/ansible-libvirtexporter.te
       tags: exporter
-    
+
     - name: Build SELinux policy package
       command: semodule_package -o /tmp/ansible-libvirtexporter.pp -m /tmp/ansible-libvirtexporter.mod
       tags: exporter
-    
+
     - name: Load SELinux policy package
       command: semodule -i /tmp/ansible-libvirtexporter.pp
       tags: exporter
-    
+
     - name: Remove temporary files
       file: path=/tmp/ansible-libvirtexporter.*
             state=absent
@@ -146,6 +147,303 @@
           - "9101:9101"
       tags: exporter, haproxy
 
+##### MINIO #####
+- name: Deploy minio
+  hosts: minio
+  become: yes
+  vars:
+    - minio_port: 9000
+    - minio_path: "/export"
+    - minio_host: "{{ hostvars[groups['minio'][0]]['ansible_host'] }}"
+    - mc_path: "/usr/local/bin/mc"
+
+  tasks:
+    - name: Install podman
+      yum: pkg=podman
+           state=installed
+      tags: minio
+
+#  minio:
+#    image: minio/minio:RELEASE.2020-01-03T19-12-21Z
+#    container_name: minio
+#    hostname: minio
+#    volumes:
+#      - minio:/export
+#    ports:
+#      - "9000:9000"
+#    networks:
+#      - thanos
+#    environment:
+#      MINIO_ACCESS_KEY: EXAMPLEKEY
+#      MINIO_SECRET_KEY: EXAMPLESECRET
+#    command: server /export
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+#      interval: 30s
+#      timeout: 20s
+#      retries: 3
+
+    - name: Run minio container
+      containers.podman.podman_container:
+        name: minio
+        image: docker.io/minio/minio
+        state: started
+        command: "server {{ minio_path }}"
+        env:
+          MINIO_ACCESS_KEY: "{{ minio_access_key }}"
+          MINIO_SECRET_KEY: "{{ minio_secret_key }}"
+        ports:
+          - "{{ minio_port }}:{{ minio_port }}"
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+          interval: 30s
+          timeout: 20s
+          retries: 3
+      tags: minio
+
+    - name: wait for minio to be available
+      ansible.builtin.wait_for:
+        host: "{{ minio_host }}"
+        port: "{{ minio_port }}"
+        delay: 10
+        state: started
+      tags: minio
+
+#  mc:
+#    image: minio/mc
+#    container_name: mc
+#    entrypoint: |
+#      sh -c 'sh -s << EOF
+#      mc config host add tmp minio:9000 EXAMPLEKEY EXAMPLESECRET
+#      mc mb tmp/thanos
+#      mc config host rm tmp
+#      sleep 10000000
+#      EOF'
+#    networks:
+#      - thanos
+#    depends_on:
+#      - minio
+
+#    - name: Run minio mc container
+#      containers.podman.podman_container:
+#        name: mc
+#        image: docker.io/minio/mc
+#        state: started
+#        entrypoint: ''
+#        command: "mc config add tmp {{ minio_host }} {{ minio_access_key }} {{ minio_secret_key }} && mc mb tmp/thanos && mc config host rm tmp;"
+#      tags: minio
+
+# https://dl.min.io/client/mc/release/linux-amd64/mc
+
+    - name: check if we have mc installed
+      stat:
+        path: "{{ mc_path }}"
+      register: mc_stat
+      tags: minio
+
+    - name: Download mc
+      ansible.builtin.get_url:
+        url: https://dl.min.io/client/mc/release/linux-amd64/mc
+        dest: "{{ mc_path }}"
+        mode: '0755'
+      tags: minio
+      when: not mc_stat.stat.exists
+
+    - name: Add minio config
+      ansible.builtin.shell: "/usr/local/bin/mc config host add tmp http://{{ minio_host }}:{{ minio_port }} {{ minio_access_key }} {{ minio_secret_key }}"
+      tags: minio
+
+    - name: Create bucket
+      ansible.builtin.shell: "/usr/local/bin/mc mb tmp/thanos"
+      tags: minio
+
+    - name: Show bucket
+      ansible.builtin.shell: "/usr/local/bin/mc ls tmp"
+      tags: minio
+
+    - name: Remove minio config
+      ansible.builtin.shell: "/usr/local/bin/mc config host rm tmp"
+      tags: minio
+
+##### THANOS #####
+#
+
+- name: Deploy thanos
+  hosts: thanos
+  become: yes
+  vars:
+    - thanos_container: quay.io/thanos/thanos:v0.30.1
+    - query_grpc_port: 10903
+    - query_http_port: 10904
+    - store_grpc_port: 10905
+    - store_http_port: 10906
+    - receive_grpc_port: 10907
+    - receive_remote_write_port: 10908
+    - receive_http_port: 10909
+
+  tasks:
+    - name: Install podman
+      yum: pkg=podman
+           state=installed
+      tags: thanos
+
+    - name: Create thanos config dir
+      ansible.builtin.file:
+        path: /etc/thanos
+        state: directory
+        mode: '0755'
+      tags: thanos
+
+    - name: create thanos minio template file
+      template: src=templates/minio-bucket.j2 dest=/etc/thanos/bucket.yml
+      tags: thanos
+      notify: Restart Thanos
+
+#   store:
+#    image: thanosio/thanos:v0.10.0
+#    container_name: thanos-store
+#    restart: always
+#    command:
+#      - "store"
+#      - "--debug.name=store"
+#      - "--log.level=debug"
+#      - "--grpc-address=0.0.0.0:10905"
+#      - "--grpc-grace-period=1s"
+#      - "--http-address=0.0.0.0:10906"
+#      - "--http-grace-period=1s"
+#      - "--data-dir=/data/store"
+#      - "--objstore.config-file=/bucket.yml"
+#    volumes:
+#      - store:/data
+#      - ./data/bucket.yml:/bucket.yml
+
+#  receive:
+#    image: thanosio/thanos:v0.10.0
+#    container_name: thanos-receive
+#    command:
+#      - "receive"
+#      - "--debug.name=receive"
+#      - "--log.level=debug"
+#      - "--tsdb.path=/data/remote-write-receive-data"
+#      - "--grpc-address=0.0.0.0:10907"
+#      - "--grpc-grace-period=1s"
+#      - "--http-address=0.0.0.0:10909"
+#      - "--http-grace-period=1s"
+#      - "--label=receive=\"true\""
+#      - "--objstore.config-file=/bucket.yml"
+#      - "--remote-write.address=0.0.0.0:10908"
+#    volumes:
+#      - receive:/data
+#      - ./data/bucket.yml:/bucket.yml
+#    depends_on:
+#      - minio
+#    networks:
+#      - thanos
+
+#  query0:
+#    image: thanosio/thanos:v0.10.0
+#    container_name: thanos-query0
+#    command:
+#      - "query"
+#      - "--debug.name=query0"
+#      - "--log.level=debug"
+#      - "--grpc-address=0.0.0.0:10903"
+#      - "--grpc-grace-period=1s"
+#      - "--http-address=0.0.0.0:10904"
+#      - "--http-grace-period=1s"
+#      - "--query.replica-label=prometheus"
+#      - "--store=store:10905"
+#      - "--store=receive:10907"
+#    ports:
+#      - 10904:10904
+#
+
+    - name: Run thanos store container
+      containers.podman.podman_container:
+        name: thanos-store
+        image: "{{ thanos_container }}"
+        state: started
+        restart: true
+        command: >
+          store --debug.name=store --log.level=debug
+          --grpc-address=0.0.0.0:{{ store_grpc_port }} --grpc-grace-period=1s
+          --http-address=0.0.0.0:{{ store_http_port }} --http-grace-period=1s
+          --data-dir=/data/store --objstore.config-file=/bucket.yml
+        ports:
+          - "{{ store_grpc_port }}:{{ store_grpc_port }}"
+          - "{{ store_http_port }}:{{ store_http_port }}"
+        volume:
+          - "/etc/thanos/bucket.yml:/bucket.yml"
+      tags: thanos
+    - name: Run thanos receive container
+      containers.podman.podman_container:
+        name: thanos-receive
+        image: "{{ thanos_container }}"
+        state: started
+        restart: true
+        command: >
+          receive --debug.name=receive --log.level=debug
+          --tsdb.path=/data/remote-write-receive-data
+          --grpc-address=0.0.0.0:{{ receive_grpc_port }} --grpc-grace-period=1s
+          --http-address=0.0.0.0:{{ receive_http_port }} --http-grace-period=1s
+          --label=receive="true" --objstore.config-file=/bucket.yml
+          --remote-write.address=0.0.0.0:{{ receive_remote_write_port }}
+          --receive.local-endpoint 127.0.0.1:10907
+        ports:
+          - "{{ receive_grpc_port }}:{{ receive_grpc_port }}"
+          - "{{ receive_remote_write_port }}:{{ receive_remote_write_port }}"
+          - "{{ receive_http_port }}:{{ receive_http_port }}"
+        volume:
+          - "/etc/thanos/bucket.yml:/bucket.yml"
+      tags: thanos
+
+    - name: Run thanos query container
+      containers.podman.podman_container:
+        name: thanos-query
+        image: "{{ thanos_container }}"
+        state: started
+        restart: true
+        command: >
+          query --debug.name=query0 --log.level=debug
+          --grpc-address=0.0.0.0:{{ query_grpc_port }} --grpc-grace-period=1s
+          --http-address=0.0.0.0:{{ query_http_port }} --http-grace-period=1s
+          --query.replica-label=prometheus
+          --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ store_grpc_port }}
+          --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ receive_grpc_port }}
+        ports:
+          - "{{ query_grpc_port }}:{{ query_grpc_port }}"
+          - "{{ query_http_port }}:{{ query_http_port }}"
+        #volume:
+        #  - "/etc/thanos/bucket.yml:/bucket.yml"
+      tags: thanos
+
+  handlers:
+
+    - name: Restart Thanos Store
+      containers.podman.podman_container:
+        name: thanos-store
+        image: docker.io/thanosio/thanos
+        state: started
+        restart: yes
+      listen: "Restart Thanos"
+
+    - name: Restart Thanos Receiver
+      containers.podman.podman_container:
+        name: thanos-receive
+        image: docker.io/thanosio/thanos
+        state: started
+        restart: yes
+      listen: "Restart Thanos"
+
+    - name: Restart Thanos Query
+      containers.podman.podman_container:
+        name: thanos-query
+        image: docker.io/thanosio/thanos
+        state: started
+        restart: yes
+      listen: "Restart Thanos"
+
+#### PROMETHEUS #####
 - name: Deploy prometheus alertmanager
   hosts: alertmanager
   become: yes
@@ -212,6 +510,7 @@
         state: started
         restart: yes
 
+#### GRAFANA #####
 - name: Deploy grafana
   hosts: grafana
   become: yes
@@ -269,3 +568,4 @@
         image: docker.io/grafana/grafana
         state: started
         restart: yes
+
