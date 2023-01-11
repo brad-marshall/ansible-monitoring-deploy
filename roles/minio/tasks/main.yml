@@ -6,7 +6,7 @@
 - name: Run minio container
   containers.podman.podman_container:
     name: minio
-    image: docker.io/minio/minio
+    image: "{{ minio_container }}"
     state: started
     command: "server {{ minio_path }}"
     env:

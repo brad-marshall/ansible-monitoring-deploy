@@ -33,11 +33,11 @@
 - name: Run grafana container
   containers.podman.podman_container:
     name: grafana
-    image: docker.io/grafana/grafana
+    image: "{{ grafana_container }}"
     state: started
     restart: true
     ports:
-      - "3000:3000"
+      - "{{ grafana_port }}:{{ grafana_port }}"
     volume:
       - "/etc/grafana/provisioning/datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
       - "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards"

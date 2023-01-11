@@ -2,9 +2,9 @@
 - name: Run alertmanager container
   containers.podman.podman_container:
     name: alertmanager
-    image: quay.io/prometheus/alertmanager
+    image: "{{ prometheus_alertmanager_container }}"
     state: started
     ports:
-      - "9093:9093"
+      - "{{ prometheus_alertmanager_port }}:{{ prometheus_alertmanager_port }}"
   tags: alertmanager
 

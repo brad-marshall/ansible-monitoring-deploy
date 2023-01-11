@@ -13,11 +13,11 @@
 - name: Run redfish exporter container
   containers.podman.podman_container:
     name: redfish-exporter
-    image: docker.io/bradmarshall/sapcc-redfish-exporter
+    image: "{{ redfish_exporter_container }}"
     state: started
     command: "/redfish_exporter/redfish-exporter.sh -l /var/log/redfish-exporter.log -d"
     ports:
-      - "9220:9220"
+      - "{{ redfish_exporter_port }}:{{ redfish_exporter_port }}"
     volumes:
       - "/etc/prometheus/redfish-config.yml:/redfish_exporter/config.yml"
   tags: exporter

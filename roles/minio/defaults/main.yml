@@ -1,4 +1,5 @@
 ---
+minio_container: "docker.io/minio/minio"
 minio_port: 9000
 minio_path: "/export"
 minio_host: "{{ hostvars[groups['minio'][0]]['ansible_host'] }}"

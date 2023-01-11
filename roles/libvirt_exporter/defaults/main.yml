@@ -1,0 +1,3 @@
+---
+libvirt_exporter_container: "docker.io/alekseizakharov/libvirt-exporter"
+libvirt_exporter_port: 9177

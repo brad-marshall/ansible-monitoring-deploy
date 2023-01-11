@@ -1,0 +1,3 @@
+---
+redfish_exporter_container: "docker.io/bradmarshall/sapcc-redfish-exporter"
+redfish_exporter_port: 9220

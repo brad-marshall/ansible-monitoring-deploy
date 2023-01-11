@@ -1,0 +1,3 @@
+---
+prometheus_alertmanager_container: "quay.io/prometheus/alertmanager"
+prometheus_alertmanager_port: 9093

@@ -34,10 +34,10 @@
 - name: Run libvirt exporter container
   containers.podman.podman_container:
     name: libvirt-exporter
-    image: docker.io/alekseizakharov/libvirt-exporter
+    image: "{{ libvirt_exporter_container }}"
     state: started
     ports:
-      - "9177:9177"
+      - "{{ libvirt_exporter_port }}:{{ libvirt_exporter_port }}"
     volume:
       - "/var/run/libvirt:/var/run/libvirt:z"
   tags: exporter

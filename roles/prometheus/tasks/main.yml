@@ -30,10 +30,10 @@
 - name: Run prometheus container
   containers.podman.podman_container:
     name: prometheus
-    image: quay.io/prometheus/prometheus
+    image: "{{ prometheus_container }}"
     state: started
     ports:
-      - "9090:9090"
+      - "{{ prometheus_port }}:{{ prometheus_port }}"
     volume:
       - "/etc/prometheus:/etc/prometheus"
   tags: prometheus

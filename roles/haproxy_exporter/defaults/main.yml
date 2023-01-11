@@ -1,0 +1,3 @@
+---
+haproxy_exporter_container: "docker.io/prom/haproxy-exporter"
+haproxy_exporter_port: 9101

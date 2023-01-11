@@ -2,9 +2,9 @@
 - name: Run node exporter container
   containers.podman.podman_container:
     name: node-exporter
-    image: quay.io/prometheus/node-exporter
+    image: "{{ node_exporter_container }}"
     state: started
     ports:
-      - "9100:9100"
+      - "{{ node_exporter_port }}:{{ node_exporter_port }}"
   tags: exporter
 
