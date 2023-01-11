@@ -1,0 +1,44 @@
+---
+- name: Install policy tools
+  yum: pkg=policycoreutils-python-utils
+       state=installed
+  tags: exporter
+
+- name: Remove SELinux policy package
+  command: semodule -r ansible-libvirtexporter
+  failed_when: false
+  tags: exporter
+
+- name: Copy SELinux type enforcement file
+  copy: src=ansible-libvirtexporter.te
+        dest=/tmp/
+  tags: exporter
+
+- name: Compile SELinux module file
+  command: checkmodule -M -m -o /tmp/ansible-libvirtexporter.mod /tmp/ansible-libvirtexporter.te
+  tags: exporter
+
+- name: Build SELinux policy package
+  command: semodule_package -o /tmp/ansible-libvirtexporter.pp -m /tmp/ansible-libvirtexporter.mod                                                                                                    
+  tags: exporter
+
+- name: Load SELinux policy package
+  command: semodule -i /tmp/ansible-libvirtexporter.pp
+  tags: exporter
+
+- name: Remove temporary files
+  file: path=/tmp/ansible-libvirtexporter.*
+        state=absent
+  tags: exporter
+
+- name: Run libvirt exporter container
+  containers.podman.podman_container:
+    name: libvirt-exporter
+    image: docker.io/alekseizakharov/libvirt-exporter
+    state: started
+    ports:
+      - "9177:9177"
+    volume:
+      - "/var/run/libvirt:/var/run/libvirt:z"
+  tags: exporter
+

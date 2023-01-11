@@ -1,0 +1,9 @@
+---
+thanos_container: quay.io/thanos/thanos:v0.30.1
+query_grpc_port: 10903
+query_http_port: 10904
+store_grpc_port: 10905
+store_http_port: 10906
+receive_grpc_port: 10907
+receive_remote_write_port: 10908
+receive_http_port: 10909

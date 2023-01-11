@@ -1,0 +1,44 @@
+---
+# Set to group wheel and 775 to allow syncing of dashboards etc
+- name: Create grafana config dir
+  ansible.builtin.file:
+    path: /etc/grafana/provisioning/{{ item }}/
+    state: directory
+    group: wheel
+    mode: '0775'
+  tags: grafana
+  with_items:
+    - datasources
+    - dashboards
+
+- name: create grafana prometheus datasource template file
+  template: src=grafana-prometheus-datasource.j2 dest=/etc/grafana/provisioning/datasources/prometheus.yml
+  tags: grafana
+  notify: Restart Grafana
+
+- name: create grafana prometheus dashboards template file
+  template: src=grafana-dashboards-datasource.j2 dest=/etc/grafana/provisioning/dashboards/dashboard.yml
+  tags: grafana
+  notify: Restart Grafana
+
+- name: sync grafana dashboards
+  become: no
+  ansible.posix.synchronize:
+    src: files/dashboards
+    dest: /etc/grafana/provisioning/
+    times: false
+  tags: grafana
+  notify: Restart Grafana
+
+- name: Run grafana container
+  containers.podman.podman_container:
+    name: grafana
+    image: docker.io/grafana/grafana
+    state: started
+    restart: true
+    ports:
+      - "3000:3000"
+    volume:
+      - "/etc/grafana/provisioning/datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
+      - "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
+  tags: grafana

@@ -1,0 +1,60 @@
+- name: Install podman
+  yum: pkg=podman
+       state=installed
+  tags: minio
+
+- name: Run minio container
+  containers.podman.podman_container:
+    name: minio
+    image: docker.io/minio/minio
+    state: started
+    command: "server {{ minio_path }}"
+    env:
+      MINIO_ACCESS_KEY: "{{ minio_access_key }}"
+      MINIO_SECRET_KEY: "{{ minio_secret_key }}"
+    ports:
+      - "{{ minio_port }}:{{ minio_port }}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  tags: minio
+
+- name: wait for minio to be available
+  ansible.builtin.wait_for:
+    host: "{{ minio_host }}"
+    port: "{{ minio_port }}"
+    delay: 10
+    state: started
+  tags: minio
+
+- name: check if we have mc installed
+  stat:
+    path: "{{ mc_path }}"
+  register: mc_stat
+  tags: minio
+
+- name: Download mc
+  ansible.builtin.get_url:
+    url: "{{ mc_url }}"
+    dest: "{{ mc_path }}"
+    mode: '0755'
+  tags: minio
+  when: not mc_stat.stat.exists
+
+- name: Add minio config
+  ansible.builtin.shell: "/usr/local/bin/mc config host add tmp http://{{ minio_host }}:{{ minio_port }} {{ minio_access_key }} {{ minio_secret_key }}"                                               
+  tags: minio
+
+# ignore_errors as a first cut effort to skip if it exists
+# Should really handle this more elegantly
+- name: Create bucket
+  ansible.builtin.shell: "/usr/local/bin/mc mb tmp/thanos"
+  ignore_errors: yes
+  tags: minio
+
+- name: Remove minio config
+  ansible.builtin.shell: "/usr/local/bin/mc config host rm tmp"
+  tags: minio
+

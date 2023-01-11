@@ -1,0 +1,10 @@
+---
+- name: Run node exporter container
+  containers.podman.podman_container:
+    name: node-exporter
+    image: quay.io/prometheus/node-exporter
+    state: started
+    ports:
+      - "9100:9100"
+  tags: exporter
+

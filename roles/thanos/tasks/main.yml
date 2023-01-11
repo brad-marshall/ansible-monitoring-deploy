@@ -1,0 +1,74 @@
+---
+- name: Install podman
+  yum: pkg=podman
+       state=installed
+  tags: thanos
+
+- name: Create thanos config dir
+  ansible.builtin.file:
+    path: /etc/thanos
+    state: directory
+    mode: '0755'
+  tags: thanos
+
+- name: create thanos minio template file
+  template: src=templates/minio-bucket.j2 dest=/etc/thanos/bucket.yml
+  tags: thanos
+  notify: Restart Thanos
+
+- name: Run thanos store container
+  containers.podman.podman_container:
+    name: thanos-store
+    image: "{{ thanos_container }}"
+    state: started
+    restart: true
+    command: >
+      store --debug.name=store --log.level=debug
+      --grpc-address=0.0.0.0:{{ store_grpc_port }} --grpc-grace-period=1s
+      --http-address=0.0.0.0:{{ store_http_port }} --http-grace-period=1s
+      --data-dir=/data/store --objstore.config-file=/bucket.yml
+    ports:
+      - "{{ store_grpc_port }}:{{ store_grpc_port }}"
+      - "{{ store_http_port }}:{{ store_http_port }}"
+    volume:
+      - "/etc/thanos/bucket.yml:/bucket.yml"
+  tags: thanos
+- name: Run thanos receive container
+  containers.podman.podman_container:
+    name: thanos-receive
+    image: "{{ thanos_container }}"
+    state: started
+    restart: true
+    command: >
+      receive --debug.name=receive --log.level=debug
+      --tsdb.path=/data/remote-write-receive-data
+      --grpc-address=0.0.0.0:{{ receive_grpc_port }} --grpc-grace-period=1s
+      --http-address=0.0.0.0:{{ receive_http_port }} --http-grace-period=1s
+      --label=receive="true" --objstore.config-file=/bucket.yml
+      --remote-write.address=0.0.0.0:{{ receive_remote_write_port }}
+      --receive.local-endpoint 127.0.0.1:10907
+    ports:
+      - "{{ receive_grpc_port }}:{{ receive_grpc_port }}"
+      - "{{ receive_remote_write_port }}:{{ receive_remote_write_port }}"
+      - "{{ receive_http_port }}:{{ receive_http_port }}"
+    volume:
+      - "/etc/thanos/bucket.yml:/bucket.yml"
+  tags: thanos
+
+- name: Run thanos query container
+  containers.podman.podman_container:
+    name: thanos-query
+    image: "{{ thanos_container }}"
+    state: started
+    restart: true
+    command: >
+      query --debug.name=query0 --log.level=debug
+      --grpc-address=0.0.0.0:{{ query_grpc_port }} --grpc-grace-period=1s
+      --http-address=0.0.0.0:{{ query_http_port }} --http-grace-period=1s
+      --query.replica-label=prometheus
+      --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ store_grpc_port }}
+      --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ receive_grpc_port }}
+    ports:
+      - "{{ query_grpc_port }}:{{ query_grpc_port }}"
+      - "{{ query_http_port }}:{{ query_http_port }}"
+  tags: thanos
