@@ -1,0 +1,7 @@
+---
+- name: Restart Grafana
+  containers.podman.podman_container:
+    name: grafana-ansible
+    image: docker.io/grafana/grafana
+    state: started
+    restart: yes

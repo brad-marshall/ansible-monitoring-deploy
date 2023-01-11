@@ -1,0 +1,23 @@
+---
+- name: Enable podman socket
+  ansible.builtin.systemd:
+    name: podman.socket
+    state: started
+    enabled: yes
+  tags: exporter
+
+- name: Run podman exporter container
+  containers.podman.podman_container:
+    name: podman-exporter
+    image: quay.io/navidys/prometheus-podman-exporter
+    state: started
+    security_opt: label=disable
+    user: root
+    ports:
+      - "9882:9882"
+    volume:
+      - "/run/podman/podman.sock:/run/podman/podman.sock"
+    env:
+      CONTAINER_HOST: "unix:///run/podman/podman.sock"
+  tags: exporter
+

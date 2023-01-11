@@ -1,0 +1,6 @@
+---
+minio_port: 9000
+minio_path: "/export"
+minio_host: "{{ hostvars[groups['minio'][0]]['ansible_host'] }}"
+mc_url: "https://dl.min.io/client/mc/release/linux-amd64/mc"
+mc_path: "/usr/local/bin/mc"

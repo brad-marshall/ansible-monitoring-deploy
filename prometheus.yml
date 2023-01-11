@@ -1,571 +1,75 @@
 ---
-
 ##### EXPORTERS #####
 - name: Deploy node exporter
   hosts: node_exporter
   become: yes
-
-#  pre_tasks:
-#    - setup:
-#      register: node_facts
-#
-#    - ansible.builtin.debug:
-#        msg: Node facts are {{ node_facts }}
-
-  tasks:
-    - name: Run node exporter container
-      containers.podman.podman_container:
-        name: node-exporter-ansible
-        image: quay.io/prometheus/node-exporter
-        state: started
-        ports:
-          - "9100:9100"
-        #volumes:
-        #  - "/etc/prometheus.d:/etc/prometheus.d"
-      tags: exporter
+  roles:
+    - node_exporter
+  tags: exporter, node
 
 - name: Deploy libvirt exporter
   hosts: libvirt_exporter
   become: yes
-
-  tasks:
-
-    - name: Install policy tools
-      yum: pkg=policycoreutils-python-utils
-           state=installed
-      tags: exporter
-
-    - name: Remove SELinux policy package
-      command: semodule -r ansible-libvirtexporter
-      failed_when: false
-      tags: exporter
-
-    - name: Copy SELinux type enforcement file
-      copy: src=ansible-libvirtexporter.te
-            dest=/tmp/
-      tags: exporter
- 
-    - name: Compile SELinux module file
-      command: checkmodule -M -m -o /tmp/ansible-libvirtexporter.mod /tmp/ansible-libvirtexporter.te
-      tags: exporter
-
-    - name: Build SELinux policy package
-      command: semodule_package -o /tmp/ansible-libvirtexporter.pp -m /tmp/ansible-libvirtexporter.mod
-      tags: exporter
-
-    - name: Load SELinux policy package
-      command: semodule -i /tmp/ansible-libvirtexporter.pp
-      tags: exporter
-
-    - name: Remove temporary files
-      file: path=/tmp/ansible-libvirtexporter.*
-            state=absent
-      tags: exporter
-
-    - name: Run libvirt exporter container
-      containers.podman.podman_container:
-        name: libvirt-exporter-ansible
-        image: docker.io/alekseizakharov/libvirt-exporter
-        state: started
-        ports:
-          - "9177:9177"
-        volume:
-          - "/var/run/libvirt:/var/run/libvirt:z"
-      tags: exporter
+  roles:
+    - libvirt_exporter
+  tags: exporter, libvirt
 
 - name: Deploy podman exporter
   hosts: podman_exporter
   become: yes
-
-# https://github.com/containers/prometheus-podman-exporter/blob/main/install.md#container-image
-# # podman run -e CONTAINER_HOST=unix:///run/podman/podman.sock -v /run/podman/podman.sock:/run/podman/podman.sock -u root --security-opt label=disable quay.io/navidys/prometheus-podman-exporter
-
-  tasks:
-    - name: Enable podman socket
-      ansible.builtin.systemd:
-        name: podman.socket
-        state: started
-        enabled: yes
-      tags: exporter
-
-    - name: Run podman exporter container
-      containers.podman.podman_container:
-        name: podman-exporter-ansible
-        image: quay.io/navidys/prometheus-podman-exporter
-        state: started
-        security_opt: label=disable
-        user: root
-        ports:
-          - "9882:9882"
-        volume:
-          - "/run/podman/podman.sock:/run/podman/podman.sock"
-        env:
-          CONTAINER_HOST: "unix:///run/podman/podman.sock"
-      tags: exporter
+  roles:
+    - podman_exporter
+  tags: exporter, podman
 
 - name: Deploy redfish exporter
   hosts: prometheus
   become: yes
-
-  tasks:
-    - name: Create prometheus config dir
-      ansible.builtin.file:
-        path: /etc/prometheus
-        state: directory
-        mode: '0755'
-      tags: exporter
-
-    - name: create redfish template file
-      template: src=redfish-config.j2 dest=/etc/prometheus/redfish-config.yml
-      tags: exporter
-
-    - name: Run redfish exporter container
-      containers.podman.podman_container:
-        name: redfish-exporter-ansible
-        image: docker.io/bradmarshall/sapcc-redfish-exporter
-        state: started
-        command: "/redfish_exporter/redfish-exporter.sh -l /var/log/redfish-exporter.log -d"
-        ports:
-          - "9220:9220"
-        volumes:
-          - "/etc/prometheus/redfish-config.yml:/redfish_exporter/config.yml"
-      tags: exporter
+  roles:
+    - redfish_exporter
+  tags: exporter, redfish
 
 - name: Deploy haproxy exporter
   hosts: haproxy_exporter
   become: yes
-
-  tasks:
-    - name: Run haproxy exporter container
-      containers.podman.podman_container:
-        name: haproxy-exporter-ansible
-        image: docker.io/prom/haproxy-exporter
-        state: started
-        # This assumes the scrape uri is http://<ip>/haproxy?stats;csv - change if its not
-        command: "--haproxy.scrape-uri=http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/haproxy?stats;csv"
-        ports:
-          - "9101:9101"
-      tags: exporter, haproxy
+  roles:
+    - haproxy_exporter
+  tags: exporter, haproxy
 
 ##### MINIO #####
 - name: Deploy minio
   hosts: minio
   become: yes
-  vars:
-    - minio_port: 9000
-    - minio_path: "/export"
-    - minio_host: "{{ hostvars[groups['minio'][0]]['ansible_host'] }}"
-    - mc_path: "/usr/local/bin/mc"
-
-  tasks:
-    - name: Install podman
-      yum: pkg=podman
-           state=installed
-      tags: minio
-
-#  minio:
-#    image: minio/minio:RELEASE.2020-01-03T19-12-21Z
-#    container_name: minio
-#    hostname: minio
-#    volumes:
-#      - minio:/export
-#    ports:
-#      - "9000:9000"
-#    networks:
-#      - thanos
-#    environment:
-#      MINIO_ACCESS_KEY: EXAMPLEKEY
-#      MINIO_SECRET_KEY: EXAMPLESECRET
-#    command: server /export
-#    healthcheck:
-#      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-#      interval: 30s
-#      timeout: 20s
-#      retries: 3
-
-    - name: Run minio container
-      containers.podman.podman_container:
-        name: minio
-        image: docker.io/minio/minio
-        state: started
-        command: "server {{ minio_path }}"
-        env:
-          MINIO_ACCESS_KEY: "{{ minio_access_key }}"
-          MINIO_SECRET_KEY: "{{ minio_secret_key }}"
-        ports:
-          - "{{ minio_port }}:{{ minio_port }}"
-        healthcheck:
-          test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-          interval: 30s
-          timeout: 20s
-          retries: 3
-      tags: minio
-
-    - name: wait for minio to be available
-      ansible.builtin.wait_for:
-        host: "{{ minio_host }}"
-        port: "{{ minio_port }}"
-        delay: 10
-        state: started
-      tags: minio
-
-#  mc:
-#    image: minio/mc
-#    container_name: mc
-#    entrypoint: |
-#      sh -c 'sh -s << EOF
-#      mc config host add tmp minio:9000 EXAMPLEKEY EXAMPLESECRET
-#      mc mb tmp/thanos
-#      mc config host rm tmp
-#      sleep 10000000
-#      EOF'
-#    networks:
-#      - thanos
-#    depends_on:
-#      - minio
-
-#    - name: Run minio mc container
-#      containers.podman.podman_container:
-#        name: mc
-#        image: docker.io/minio/mc
-#        state: started
-#        entrypoint: ''
-#        command: "mc config add tmp {{ minio_host }} {{ minio_access_key }} {{ minio_secret_key }} && mc mb tmp/thanos && mc config host rm tmp;"
-#      tags: minio
-
-# https://dl.min.io/client/mc/release/linux-amd64/mc
-
-    - name: check if we have mc installed
-      stat:
-        path: "{{ mc_path }}"
-      register: mc_stat
-      tags: minio
-
-    - name: Download mc
-      ansible.builtin.get_url:
-        url: https://dl.min.io/client/mc/release/linux-amd64/mc
-        dest: "{{ mc_path }}"
-        mode: '0755'
-      tags: minio
-      when: not mc_stat.stat.exists
-
-    - name: Add minio config
-      ansible.builtin.shell: "/usr/local/bin/mc config host add tmp http://{{ minio_host }}:{{ minio_port }} {{ minio_access_key }} {{ minio_secret_key }}"
-      tags: minio
-
-    - name: Create bucket
-      ansible.builtin.shell: "/usr/local/bin/mc mb tmp/thanos"
-      tags: minio
-
-    - name: Show bucket
-      ansible.builtin.shell: "/usr/local/bin/mc ls tmp"
-      tags: minio
-
-    - name: Remove minio config
-      ansible.builtin.shell: "/usr/local/bin/mc config host rm tmp"
-      tags: minio
+  roles:
+    - minio
+  tags: minio
 
 ##### THANOS #####
-#
-
 - name: Deploy thanos
   hosts: thanos
   become: yes
-  vars:
-    - thanos_container: quay.io/thanos/thanos:v0.30.1
-    - query_grpc_port: 10903
-    - query_http_port: 10904
-    - store_grpc_port: 10905
-    - store_http_port: 10906
-    - receive_grpc_port: 10907
-    - receive_remote_write_port: 10908
-    - receive_http_port: 10909
-
-  tasks:
-    - name: Install podman
-      yum: pkg=podman
-           state=installed
-      tags: thanos
-
-    - name: Create thanos config dir
-      ansible.builtin.file:
-        path: /etc/thanos
-        state: directory
-        mode: '0755'
-      tags: thanos
-
-    - name: create thanos minio template file
-      template: src=templates/minio-bucket.j2 dest=/etc/thanos/bucket.yml
-      tags: thanos
-      notify: Restart Thanos
-
-#   store:
-#    image: thanosio/thanos:v0.10.0
-#    container_name: thanos-store
-#    restart: always
-#    command:
-#      - "store"
-#      - "--debug.name=store"
-#      - "--log.level=debug"
-#      - "--grpc-address=0.0.0.0:10905"
-#      - "--grpc-grace-period=1s"
-#      - "--http-address=0.0.0.0:10906"
-#      - "--http-grace-period=1s"
-#      - "--data-dir=/data/store"
-#      - "--objstore.config-file=/bucket.yml"
-#    volumes:
-#      - store:/data
-#      - ./data/bucket.yml:/bucket.yml
-
-#  receive:
-#    image: thanosio/thanos:v0.10.0
-#    container_name: thanos-receive
-#    command:
-#      - "receive"
-#      - "--debug.name=receive"
-#      - "--log.level=debug"
-#      - "--tsdb.path=/data/remote-write-receive-data"
-#      - "--grpc-address=0.0.0.0:10907"
-#      - "--grpc-grace-period=1s"
-#      - "--http-address=0.0.0.0:10909"
-#      - "--http-grace-period=1s"
-#      - "--label=receive=\"true\""
-#      - "--objstore.config-file=/bucket.yml"
-#      - "--remote-write.address=0.0.0.0:10908"
-#    volumes:
-#      - receive:/data
-#      - ./data/bucket.yml:/bucket.yml
-#    depends_on:
-#      - minio
-#    networks:
-#      - thanos
-
-#  query0:
-#    image: thanosio/thanos:v0.10.0
-#    container_name: thanos-query0
-#    command:
-#      - "query"
-#      - "--debug.name=query0"
-#      - "--log.level=debug"
-#      - "--grpc-address=0.0.0.0:10903"
-#      - "--grpc-grace-period=1s"
-#      - "--http-address=0.0.0.0:10904"
-#      - "--http-grace-period=1s"
-#      - "--query.replica-label=prometheus"
-#      - "--store=store:10905"
-#      - "--store=receive:10907"
-#    ports:
-#      - 10904:10904
-#
-
-    - name: Run thanos store container
-      containers.podman.podman_container:
-        name: thanos-store
-        image: "{{ thanos_container }}"
-        state: started
-        restart: true
-        command: >
-          store --debug.name=store --log.level=debug
-          --grpc-address=0.0.0.0:{{ store_grpc_port }} --grpc-grace-period=1s
-          --http-address=0.0.0.0:{{ store_http_port }} --http-grace-period=1s
-          --data-dir=/data/store --objstore.config-file=/bucket.yml
-        ports:
-          - "{{ store_grpc_port }}:{{ store_grpc_port }}"
-          - "{{ store_http_port }}:{{ store_http_port }}"
-        volume:
-          - "/etc/thanos/bucket.yml:/bucket.yml"
-      tags: thanos
-    - name: Run thanos receive container
-      containers.podman.podman_container:
-        name: thanos-receive
-        image: "{{ thanos_container }}"
-        state: started
-        restart: true
-        command: >
-          receive --debug.name=receive --log.level=debug
-          --tsdb.path=/data/remote-write-receive-data
-          --grpc-address=0.0.0.0:{{ receive_grpc_port }} --grpc-grace-period=1s
-          --http-address=0.0.0.0:{{ receive_http_port }} --http-grace-period=1s
-          --label=receive="true" --objstore.config-file=/bucket.yml
-          --remote-write.address=0.0.0.0:{{ receive_remote_write_port }}
-          --receive.local-endpoint 127.0.0.1:10907
-        ports:
-          - "{{ receive_grpc_port }}:{{ receive_grpc_port }}"
-          - "{{ receive_remote_write_port }}:{{ receive_remote_write_port }}"
-          - "{{ receive_http_port }}:{{ receive_http_port }}"
-        volume:
-          - "/etc/thanos/bucket.yml:/bucket.yml"
-      tags: thanos
-
-    - name: Run thanos query container
-      containers.podman.podman_container:
-        name: thanos-query
-        image: "{{ thanos_container }}"
-        state: started
-        restart: true
-        command: >
-          query --debug.name=query0 --log.level=debug
-          --grpc-address=0.0.0.0:{{ query_grpc_port }} --grpc-grace-period=1s
-          --http-address=0.0.0.0:{{ query_http_port }} --http-grace-period=1s
-          --query.replica-label=prometheus
-          --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ store_grpc_port }}
-          --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ receive_grpc_port }}
-        ports:
-          - "{{ query_grpc_port }}:{{ query_grpc_port }}"
-          - "{{ query_http_port }}:{{ query_http_port }}"
-        #volume:
-        #  - "/etc/thanos/bucket.yml:/bucket.yml"
-      tags: thanos
-
-  handlers:
-
-    - name: Restart Thanos Store
-      containers.podman.podman_container:
-        name: thanos-store
-        image: docker.io/thanosio/thanos
-        state: started
-        restart: yes
-      listen: "Restart Thanos"
-
-    - name: Restart Thanos Receiver
-      containers.podman.podman_container:
-        name: thanos-receive
-        image: docker.io/thanosio/thanos
-        state: started
-        restart: yes
-      listen: "Restart Thanos"
-
-    - name: Restart Thanos Query
-      containers.podman.podman_container:
-        name: thanos-query
-        image: docker.io/thanosio/thanos
-        state: started
-        restart: yes
-      listen: "Restart Thanos"
+  roles:
+    - thanos
+  tags: thanos
 
 #### PROMETHEUS #####
 - name: Deploy prometheus alertmanager
   hosts: alertmanager
   become: yes
-
-  tasks:
-    - name: Run alertmanager container
-      containers.podman.podman_container:
-        name: alertmanager-ansible
-        image: quay.io/prometheus/alertmanager
-        state: started
-        ports:
-          - "9093:9093"
-      tags: alertmanager
+  roles:
+    - alertmanager
+  tags: alertmanager
 
 - name: Deploy prometheus
   hosts: prometheus
+  roles:
+    - prometheus
   become: yes
-
-  tasks:
-    - name: Create prometheus config dir
-      ansible.builtin.file:
-        path: /etc/prometheus
-        state: directory
-        mode: '0755'
-      tags: prometheus
-
-    - name: create prometheus template file
-      template: src=prometheus.j2 dest=/etc/prometheus/prometheus.yml
-      tags: prometheus
-      notify: Restart Prometheus
-
-    - name: copy prometheus alertmanager rules
-      ansible.builtin.copy:
-        src: files/alertmanager/prometheus-exporter.yml
-        dest: /etc/prometheus/prometheus-exporter.yml
-        mode: '0644'
-      tags: prometheus
-      notify: Restart Prometheus
-
-    - name: copy node exporter alertmanager rules
-      ansible.builtin.copy:
-        src: files/alertmanager/node-exporter.yml
-        dest: /etc/prometheus/node-exporter.yml
-        mode: '0644'
-      tags: prometheus
-      notify: Restart Prometheus
-
-    - name: Run prometheus container
-      containers.podman.podman_container:
-        name: prometheus-ansible
-        image: quay.io/prometheus/prometheus
-        state: started
-        ports:
-          - "9090:9090"
-        volume:
-          - "/etc/prometheus:/etc/prometheus"
-      tags: prometheus
-
-  handlers:
-    - name: Restart Prometheus
-      containers.podman.podman_container:
-        name: prometheus-ansible
-        image: quay.io/prometheus/prometheus
-        state: started
-        restart: yes
+  tags: prometheus
 
 #### GRAFANA #####
 - name: Deploy grafana
   hosts: grafana
   become: yes
-
-  tasks:
-
-    # Set to group wheel and 775 to allow syncing of dashboards etc
-    - name: Create grafana config dir
-      ansible.builtin.file:
-        path: /etc/grafana/provisioning/{{ item }}/
-        state: directory
-        group: wheel
-        mode: '0775'
-      tags: grafana
-      with_items:
-        - datasources
-        - dashboards
-
-    - name: create grafana prometheus datasource template file
-      template: src=grafana-prometheus-datasource.j2 dest=/etc/grafana/provisioning/datasources/prometheus.yml
-      tags: grafana
-      notify: Restart Grafana
-
-    - name: create grafana prometheus dashboards template file
-      template: src=grafana-dashboards-datasource.j2 dest=/etc/grafana/provisioning/dashboards/dashboard.yml
-      tags: grafana
-      notify: Restart Grafana
-
-    - name: sync grafana dashboards
-      become: no
-      ansible.posix.synchronize:
-        src: files/dashboards
-        dest: /etc/grafana/provisioning/
-        times: false
-      tags: grafana
-      notify: Restart Grafana
-
-    - name: Run grafana container
-      containers.podman.podman_container:
-        name: grafana-ansible
-        image: docker.io/grafana/grafana
-        state: started
-        restart: true
-        ports:
-          - "3000:3000"
-        volume:
-          - "/etc/grafana/provisioning/datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
-          - "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
-      tags: grafana
-
-  handlers:
-    - name: Restart Grafana
-      containers.podman.podman_container:
-        name: grafana-ansible
-        image: docker.io/grafana/grafana
-        state: started
-        restart: yes
-
+  roles:
+    - grafana
+  tags: grafana

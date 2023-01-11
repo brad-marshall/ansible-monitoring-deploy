@@ -1,0 +1,25 @@
+---
+- name: Restart Thanos Store
+  containers.podman.podman_container:
+    name: thanos-store
+    image: "{{ thanos_container }}"
+    state: started
+    restart: yes
+  listen: "Restart Thanos"
+      
+- name: Restart Thanos Receiver
+  containers.podman.podman_container:
+    name: thanos-receive
+    image: "{{ thanos_container }}"
+    state: started
+    restart: yes
+  listen: "Restart Thanos"
+
+- name: Restart Thanos Query
+  containers.podman.podman_container:
+    name: thanos-query
+    image: "{{ thanos_container }}"
+    state: started
+    restart: yes
+  listen: "Restart Thanos"
+
