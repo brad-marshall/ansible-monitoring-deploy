@@ -113,6 +113,15 @@ scrape_configs:
 {% endfor %}
 {% endif %}
 
+{% if groups['all']|length > 0 %}
+  - job_name: "promtail"
+    static_configs:
+      - targets:
+{% for host in groups['all'] %}
+        - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9080
+{% endfor %}
+{% endif %}
+
 {% if groups['thanos']|length > 0 %}
 remote_write:
 - url: http://{{ hostvars[groups['thanos'][0]]['ansible_host'] }}:10908/api/v1/receive

@@ -1,3 +1,4 @@
 ---
 promtail_container: "docker.io/grafana/promtail"
 promtail_name: "promtail"
+promtail_port: "9080"

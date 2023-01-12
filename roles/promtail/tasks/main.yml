@@ -24,6 +24,8 @@
     image: "{{ promtail_container }}"
     state: started
     command: "-config.file /mnt/config/promtail-config.yaml"
+    ports:
+      - "{{ promtail_port }}:{{ promtail_port }}"
     volumes:
       - "/etc/loki/promtail-config.yaml:/mnt/config/promtail-config.yaml"
       - "/var/log/containers:/var/log/containers"
