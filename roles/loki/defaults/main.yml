@@ -1,0 +1,4 @@
+---
+loki_container: "docker.io/grafana/loki"
+loki_name: "loki"
+loki_port: 3100

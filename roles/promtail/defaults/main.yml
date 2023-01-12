@@ -1,0 +1,3 @@
+---
+promtail_container: "docker.io/grafana/promtail"
+promtail_name: "promtail"

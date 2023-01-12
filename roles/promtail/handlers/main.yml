@@ -1,0 +1,8 @@
+---
+- name: Restart Promtail
+  containers.podman.podman_container:
+    name: promtail
+    image: "{{ promtail_container }}"
+    state: started
+    restart: yes
+

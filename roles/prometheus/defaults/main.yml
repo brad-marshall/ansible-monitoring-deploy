@@ -1,3 +1,4 @@
 ---
 prometheus_container: "quay.io/prometheus/prometheus"
+prometheus_name: "prometheus"
 prometheus_port: 9090

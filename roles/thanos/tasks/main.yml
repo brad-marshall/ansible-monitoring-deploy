@@ -1,4 +1,11 @@
 ---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: thanos
+
 - name: Install podman
   yum: pkg=podman
        state=installed
@@ -18,7 +25,7 @@
 
 - name: Run thanos store container
   containers.podman.podman_container:
-    name: thanos-store
+    name: "{{ thanos_name }}-store"
     image: "{{ thanos_container }}"
     state: started
     restart: true
@@ -32,10 +39,12 @@
       - "{{ store_http_port }}:{{ store_http_port }}"
     volume:
       - "/etc/thanos/bucket.yml:/bucket.yml"
+    log_options: "path=/var/log/containers/{{ thanos_name }}-store.json"
+    log_driver: k8s-file
   tags: thanos
 - name: Run thanos receive container
   containers.podman.podman_container:
-    name: thanos-receive
+    name: "{{ thanos_name }}-receive"
     image: "{{ thanos_container }}"
     state: started
     restart: true
@@ -53,11 +62,13 @@
       - "{{ receive_http_port }}:{{ receive_http_port }}"
     volume:
       - "/etc/thanos/bucket.yml:/bucket.yml"
+    log_options: "path=/var/log/containers/{{ thanos_name }}-receieve.json"
+    log_driver: k8s-file
   tags: thanos
 
 - name: Run thanos query container
   containers.podman.podman_container:
-    name: thanos-query
+    name: "{{ thanos_name }}-query"
     image: "{{ thanos_container }}"
     state: started
     restart: true
@@ -71,4 +82,6 @@
     ports:
       - "{{ query_grpc_port }}:{{ query_grpc_port }}"
       - "{{ query_http_port }}:{{ query_http_port }}"
+    log_options: "path=/var/log/containers/{{ thanos_name }}-query.json"
+    log_driver: k8s-file
   tags: thanos

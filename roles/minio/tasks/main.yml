@@ -1,3 +1,11 @@
+---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: exporter, haproxy
+
 - name: Install podman
   yum: pkg=podman
        state=installed
@@ -5,7 +13,7 @@
 
 - name: Run minio container
   containers.podman.podman_container:
-    name: minio
+    name: "{{ minio_name }}"
     image: "{{ minio_container }}"
     state: started
     command: "server {{ minio_path }}"
@@ -19,6 +27,8 @@
       interval: 30s
       timeout: 20s
       retries: 3
+    log_options: "path=/var/log/containers/{{ minio_name }}.json"
+    log_driver: k8s-file
   tags: minio
 
 - name: wait for minio to be available
@@ -42,6 +52,15 @@
     mode: '0755'
   tags: minio
   when: not mc_stat.stat.exists
+
+# Needs boto3 and botocore, maybe via pip?
+#- name: Create minio bucket
+#  amazon.aws.s3_bucket:
+#    name: thanos
+#    state: present
+#    endpoint_url: http://{{ minio_host }}:{{ minio_port }}
+#    access_key: "{{ minio_access_key }}"
+#    secret_key: "{{ minio_secret_key }}"
 
 - name: Add minio config
   ansible.builtin.shell: "/usr/local/bin/mc config host add tmp http://{{ minio_host }}:{{ minio_port }} {{ minio_access_key }} {{ minio_secret_key }}"                                               

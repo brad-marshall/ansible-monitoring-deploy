@@ -1,4 +1,11 @@
 ---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: prometheus
+
 - name: Create prometheus config dir
   ansible.builtin.file:
     path: /etc/prometheus
@@ -29,11 +36,13 @@
 
 - name: Run prometheus container
   containers.podman.podman_container:
-    name: prometheus
+    name: "{{ prometheus_name }}"
     image: "{{ prometheus_container }}"
     state: started
     ports:
       - "{{ prometheus_port }}:{{ prometheus_port }}"
     volume:
       - "/etc/prometheus:/etc/prometheus"
+    log_options: "path=/var/log/containers/{{ prometheus_name }}.json"
+    log_driver: k8s-file
   tags: prometheus

@@ -1,3 +1,4 @@
 ---
 grafana_container: "docker.io/grafana/grafana"
+grafana_name: "grafana"
 grafana_port: 3000

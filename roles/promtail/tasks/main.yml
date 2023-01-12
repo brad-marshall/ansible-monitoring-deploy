@@ -1,0 +1,35 @@
+---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: promtail
+
+- name: Create loki config dir
+  ansible.builtin.file:
+    path: /etc/loki
+    state: directory
+    mode: '0755'
+  tags: promtail
+
+- name: create promtail template file
+  template: src=templates/promtail-config.j2 dest=/etc/loki/promtail-config.yaml
+  tags: promtail
+  notify: Restart Promtail
+
+- name: Run promtail container
+  containers.podman.podman_container:
+    name: "{{ promtail_name }}"
+    image: "{{ promtail_container }}"
+    state: started
+    command: "-config.file /mnt/config/promtail-config.yaml"
+    volumes:
+      - "/etc/loki/promtail-config.yaml:/mnt/config/promtail-config.yaml"
+      - "/var/log/containers:/var/log/containers"
+    log_options: "path=/var/log/containers/{{ promtail_name }}.json"
+    log_driver: k8s-file
+    # disable selinux
+    security_opt: label=disable
+  tags: promtail
+

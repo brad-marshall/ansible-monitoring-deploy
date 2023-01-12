@@ -1,0 +1,4 @@
+---
+podman_exporter_container: "quay.io/navidys/prometheus-podman-exporter"
+podman_exporter_name: "podman_exporter"
+podman_port: 9882

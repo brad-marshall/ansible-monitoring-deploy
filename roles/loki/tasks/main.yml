@@ -1,0 +1,37 @@
+---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: loki
+
+- name: Create loki config dir
+  ansible.builtin.file:
+    path: /etc/loki
+    state: directory
+    mode: '0755'
+  tags: loki
+
+- name: copy loki config file
+  ansible.builtin.copy:
+    src: files/loki-config.yaml
+    dest: /etc/loki/loki-config.yaml
+    mode: '0644'
+  tags: loki
+  notify: Restart Loki
+
+
+- name: Run loki container
+  containers.podman.podman_container:
+    name: "{{ loki_name }}"
+    image: "{{ loki_container }}"
+    state: started
+    command: "-config.file=/mnt/config/loki-config.yaml"                                                                    
+    ports:
+      - "{{ loki_port }}:{{ loki_port }}"
+    volumes:
+      - "/etc/loki/loki-config.yaml:/mnt/config/loki-config.yaml"
+    log_options: "path=/var/log/containers/{{ loki_name }}.json"
+    log_driver: k8s-file
+  tags: loki

@@ -1,12 +1,21 @@
 ---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: exporter, haproxy
+
 - name: Run haproxy exporter container
   containers.podman.podman_container:
-    name: haproxy-exporter
+    name: "{{ haproxy_exporter_name }}"
     image: "{{ haproxy_exporter_container }}"
     state: started
     # This assumes the scrape uri is http://<ip>/haproxy?stats;csv - change if its not
     command: "--haproxy.scrape-uri=http://{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}/haproxy?stats;csv"                                                                    
     ports:
       - "{{ haproxy_exporter_port }}:{{ haproxy_exporter_port }}"
+    log_options: "path=/var/log/containers/{{ haproxy_exporter_name }}.json"
+    log_driver: k8s-file
   tags: exporter, haproxy
    

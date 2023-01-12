@@ -1,4 +1,11 @@
 ---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: grafana
+
 # Set to group wheel and 775 to allow syncing of dashboards etc
 - name: Create grafana config dir
   ansible.builtin.file:
@@ -13,6 +20,13 @@
 
 - name: create grafana prometheus datasource template file
   template: src=grafana-prometheus-datasource.j2 dest=/etc/grafana/provisioning/datasources/prometheus.yml
+  when: (groups['prometheus'] is defined) and (groups['prometheus'] | type_debug == 'list') and (groups['prometheus'] | length > 0)
+  tags: grafana
+  notify: Restart Grafana
+
+- name: create grafana loki datasource template file
+  template: src=grafana-loki-datasource.j2 dest=/etc/grafana/provisioning/datasources/loki.yml
+  when: (groups['loki'] is defined) and (groups['loki'] | type_debug == 'list') and (groups['loki'] | length > 0)
   tags: grafana
   notify: Restart Grafana
 
@@ -32,7 +46,7 @@
 
 - name: Run grafana container
   containers.podman.podman_container:
-    name: grafana
+    name: "{{ grafana_name }}"
     image: "{{ grafana_container }}"
     state: started
     restart: true
@@ -40,5 +54,8 @@
       - "{{ grafana_port }}:{{ grafana_port }}"
     volume:
       - "/etc/grafana/provisioning/datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
+      - "/etc/grafana/provisioning/datasources/loki.yml:/etc/grafana/provisioning/datasources/loki.yml"
       - "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
+    log_options: "path=/var/log/containers/{{ grafana_name }}.json"
+    log_driver: k8s-file
   tags: grafana

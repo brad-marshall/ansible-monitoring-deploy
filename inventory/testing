@@ -28,3 +28,6 @@ bradm-monitoring-vm
 
 [minio]
 bradm-monitoring-vm
+
+[loki]
+bradm-monitoring-vm

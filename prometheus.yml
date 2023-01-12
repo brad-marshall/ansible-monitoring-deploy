@@ -1,4 +1,8 @@
 ---
+- name: Gather facts on everything
+  hosts: all
+  become: yes
+
 ##### EXPORTERS #####
 - name: Deploy node exporter
   hosts: node_exporter
@@ -50,6 +54,22 @@
   roles:
     - thanos
   tags: thanos
+
+##### LOKI #####
+- name: Deploy loki
+  hosts: loki
+  become: yes
+  roles:
+    - loki
+  tags: loki
+
+##### PROMTAIL #####
+- name: Deploy promtail
+  hosts: all
+  become: yes
+  roles:
+    - promtail
+  tags: promtail
 
 #### PROMETHEUS #####
 - name: Deploy prometheus alertmanager
