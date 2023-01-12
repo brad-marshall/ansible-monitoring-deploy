@@ -2,11 +2,13 @@
 - name: Gather facts on everything
   hosts: all
   become: yes
+  gather_facts: yes
 
 ##### EXPORTERS #####
 - name: Deploy node exporter
   hosts: node_exporter
   become: yes
+  gather_facts: no
   roles:
     - node_exporter
   tags: exporter, node
@@ -14,6 +16,7 @@
 - name: Deploy libvirt exporter
   hosts: libvirt_exporter
   become: yes
+  gather_facts: no
   roles:
     - libvirt_exporter
   tags: exporter, libvirt
@@ -21,6 +24,7 @@
 - name: Deploy podman exporter
   hosts: podman_exporter
   become: yes
+  gather_facts: no
   roles:
     - podman_exporter
   tags: exporter, podman
@@ -28,6 +32,7 @@
 - name: Deploy redfish exporter
   hosts: prometheus
   become: yes
+  gather_facts: no
   roles:
     - redfish_exporter
   tags: exporter, redfish
@@ -35,6 +40,7 @@
 - name: Deploy haproxy exporter
   hosts: haproxy_exporter
   become: yes
+  gather_facts: no
   roles:
     - haproxy_exporter
   tags: exporter, haproxy
@@ -43,6 +49,7 @@
 - name: Deploy minio
   hosts: minio
   become: yes
+  gather_facts: no
   roles:
     - minio
   tags: minio
@@ -51,6 +58,7 @@
 - name: Deploy thanos
   hosts: thanos
   become: yes
+  gather_facts: no
   roles:
     - thanos
   tags: thanos
@@ -59,6 +67,7 @@
 - name: Deploy loki
   hosts: loki
   become: yes
+  gather_facts: no
   roles:
     - loki
   tags: loki
@@ -67,6 +76,7 @@
 - name: Deploy promtail
   hosts: all
   become: yes
+  gather_facts: no
   roles:
     - promtail
   tags: promtail
@@ -75,21 +85,24 @@
 - name: Deploy prometheus alertmanager
   hosts: alertmanager
   become: yes
+  gather_facts: no
   roles:
     - alertmanager
   tags: alertmanager
 
 - name: Deploy prometheus
   hosts: prometheus
+  become: yes
+  gather_facts: no
   roles:
     - prometheus
-  become: yes
   tags: prometheus
 
 #### GRAFANA #####
 - name: Deploy grafana
   hosts: grafana
   become: yes
+  gather_facts: no
   roles:
     - grafana
   tags: grafana
