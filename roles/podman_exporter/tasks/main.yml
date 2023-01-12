@@ -8,16 +8,18 @@
 
 - name: Run podman exporter container
   containers.podman.podman_container:
-    name: podman-exporter
-    image: quay.io/navidys/prometheus-podman-exporter
+    name: "{{ podman_exporter_name }}"
+    image: "{{ podman_exporter_container }}"
     state: started
     security_opt: label=disable
     user: root
     ports:
-      - "9882:9882"
+      - "{{ podman_port }}:{{ podman_port }}"
     volume:
       - "/run/podman/podman.sock:/run/podman/podman.sock"
     env:
       CONTAINER_HOST: "unix:///run/podman/podman.sock"
+    log_options: "path=/var/log/containers/{{ podman_exporter_name }}.json"
+    log_driver: k8s-file
   tags: exporter
 

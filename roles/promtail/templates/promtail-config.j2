@@ -1,0 +1,53 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://{{ hostvars[groups['loki'][0]]['ansible_host'] }}:3100/loki/api/v1/push
+
+scrape_configs:
+
+- job_name: system
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      instance: {{ inventory_hostname }}
+      job: varlogs
+      __path__: /var/log/*log
+  - targets:
+      - localhost
+    labels:
+      instance: {{ inventory_hostname }}
+      job: morevarlogs
+      __path__: /var/log/*/*log
+  - targets:
+      - localhost
+    labels:
+      instance: {{ inventory_hostname }}
+      job: otherlogs
+      __path__: /var/log/{messages,secure,cron}
+
+- job_name: containers
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      instance: {{ inventory_hostname }}
+      job: containerlogs
+      __path__: /var/log/containers/*.json
+
+  pipeline_stages:
+
+  - json:
+      expressions:
+        stream: stream
+        attrs: attrs
+        tag: attrs.tag
+
+  - labels:
+      tag:
+      stream:

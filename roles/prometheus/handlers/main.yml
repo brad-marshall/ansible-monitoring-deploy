@@ -1,8 +1,8 @@
 ---
 - name: Restart Prometheus
   containers.podman.podman_container:
-    name: prometheus-ansible
-    image: quay.io/prometheus/prometheus
+    name: prometheus
+    image: "{{ prometheus_container }}"
     state: started
     restart: yes
 

@@ -1,4 +1,11 @@
 ---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: exporter
+
 - name: Create prometheus config dir
   ansible.builtin.file:
     path: /etc/prometheus
@@ -12,7 +19,7 @@
 
 - name: Run redfish exporter container
   containers.podman.podman_container:
-    name: redfish-exporter
+    name: "{{ redfish_exporter_name }}"
     image: "{{ redfish_exporter_container }}"
     state: started
     command: "/redfish_exporter/redfish-exporter.sh -l /var/log/redfish-exporter.log -d"
@@ -20,5 +27,7 @@
       - "{{ redfish_exporter_port }}:{{ redfish_exporter_port }}"
     volumes:
       - "/etc/prometheus/redfish-config.yml:/redfish_exporter/config.yml"
+    log_options: "path=/var/log/containers/{{ redfish_exporter_name }}.json"
+    log_driver: k8s-file
   tags: exporter
 

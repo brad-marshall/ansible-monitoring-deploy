@@ -53,6 +53,17 @@ This Thanos deployment has been done using https://blog.ruanbekker.com/blog/2020
 
 It initially deploys minio, thanos store, query and reciever components.
 
+# Loki
+
+This deploys loki and promtail, and sets up a connection in grafana to talk to loki.
+
+Useful links in figuring this out are:
+
+* https://grafana.com/docs/loki/latest/clients/promtail/configuration/
+* https://github.com/brpaz/logs-with-loki
+* https://mpolinowski.github.io/docs/DevOps/Provisioning/2021-04-07--loki-prometheus-grafana/2021-04-07/
+* https://open200.com/de/blog/loki-logs/
+
 # TODO
 
 * Move to roles

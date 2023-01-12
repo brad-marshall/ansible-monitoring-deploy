@@ -1,4 +1,11 @@
 ---
+- name: Create container log dir
+  ansible.builtin.file:
+    path: /var/log/containers
+    state: directory
+    mode: '0755'
+  tags: exporter
+
 - name: Install policy tools
   yum: pkg=policycoreutils-python-utils
        state=installed
@@ -33,12 +40,14 @@
 
 - name: Run libvirt exporter container
   containers.podman.podman_container:
-    name: libvirt-exporter
+    name: "{{ libvirt_exporter_name }}"
     image: "{{ libvirt_exporter_container }}"
     state: started
     ports:
       - "{{ libvirt_exporter_port }}:{{ libvirt_exporter_port }}"
     volume:
       - "/var/run/libvirt:/var/run/libvirt:z"
+    log_options: "path=/var/log/containers/{{ libvirt_exporter_name }}.json"
+    log_driver: k8s-file
   tags: exporter
 
