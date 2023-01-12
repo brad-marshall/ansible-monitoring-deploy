@@ -58,4 +58,16 @@
       - "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
     log_options: "path=/var/log/containers/{{ grafana_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
+  tags: grafana
+
+- name: enable and start grafana service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ grafana_name }}"
   tags: grafana

@@ -41,7 +41,13 @@
       - "/etc/thanos/bucket.yml:/bucket.yml"
     log_options: "path=/var/log/containers/{{ thanos_name }}-store.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: thanos
+
 - name: Run thanos receive container
   containers.podman.podman_container:
     name: "{{ thanos_name }}-receive"
@@ -64,6 +70,11 @@
       - "/etc/thanos/bucket.yml:/bucket.yml"
     log_options: "path=/var/log/containers/{{ thanos_name }}-receieve.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: thanos
 
 - name: Run thanos query container
@@ -84,4 +95,20 @@
       - "{{ query_http_port }}:{{ query_http_port }}"
     log_options: "path=/var/log/containers/{{ thanos_name }}-query.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: thanos
+
+- name: enable and start thanos services
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ thanos_name }}-{{ item }}"
+  tags: grafana
+  with_items:
+    - query
+    - receive
+    - store

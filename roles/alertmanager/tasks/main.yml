@@ -15,5 +15,15 @@
       - "{{ prometheus_alertmanager_port }}:{{ prometheus_alertmanager_port }}"
     log_options: "path=/var/log/containers/{{ prometheus_alertmanager_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: alertmanager
 
+- name: enable and start alertmaner service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ prometheus_alertmanager_name }}"

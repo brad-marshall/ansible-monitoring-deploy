@@ -33,5 +33,17 @@
     log_driver: k8s-file
     # disable selinux
     security_opt: label=disable
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
+  tags: promtail
+
+- name: enable and start promtail service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ promtail_name }}"
   tags: promtail
 

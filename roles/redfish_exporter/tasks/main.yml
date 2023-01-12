@@ -29,5 +29,16 @@
       - "/etc/prometheus/redfish-config.yml:/redfish_exporter/config.yml"
     log_options: "path=/var/log/containers/{{ redfish_exporter_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: exporter
 
+- name: enable and start redfish exporter service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ redfish_exporter_name }}"
+  tags: exporter

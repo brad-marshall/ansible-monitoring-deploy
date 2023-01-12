@@ -45,4 +45,17 @@
       - "/etc/prometheus:/etc/prometheus"
     log_options: "path=/var/log/containers/{{ prometheus_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: prometheus
+
+- name: enable and start prometheus service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ prometheus_name }}"
+  tags: prometheus
+

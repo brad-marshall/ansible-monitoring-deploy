@@ -17,5 +17,16 @@
       - "{{ haproxy_exporter_port }}:{{ haproxy_exporter_port }}"
     log_options: "path=/var/log/containers/{{ haproxy_exporter_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: exporter, haproxy
    
+- name: enable and start haproxy exporter service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ haproxy_exporter_name }}"
+  tags: exporter, haproxy

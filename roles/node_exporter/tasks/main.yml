@@ -15,5 +15,16 @@
       - "{{ node_exporter_port }}:{{ node_exporter_port }}"
     log_options: "path=/var/log/containers/{{ node_exporter_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
   tags: exporter
 
+- name: enable and start node exporter service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ node_exporter_name }}"
+  tags: exporter

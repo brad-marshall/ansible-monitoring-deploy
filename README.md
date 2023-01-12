@@ -66,9 +66,10 @@ Useful links in figuring this out are:
 
 # TODO
 
-* Move to roles
-* More thanos setup
-* Loki for grabbing logs
+* Add thanos datasource to grafana
+* More thanos setup - add compactor, setup metrics
+* Better loki dashboards, include some for logs
+  - variable for hostname and cotnainer to show logs?
 * Alertmanager rules - stub rules file with pointer to extra file people can edit - mount inside alertmanager container
 * Move generated ip lists to file_sd_config setup
 * Work out how to have different ipmi credentials for redfish exporter

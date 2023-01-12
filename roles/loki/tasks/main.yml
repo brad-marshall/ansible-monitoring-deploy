@@ -34,4 +34,16 @@
       - "/etc/loki/loki-config.yaml:/mnt/config/loki-config.yaml"
     log_options: "path=/var/log/containers/{{ loki_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
+  tags: loki
+
+- name: enable and start loki service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ loki_name }}"
   tags: loki

@@ -1,4 +1,4 @@
 ---
 redfish_exporter_container: "docker.io/bradmarshall/sapcc-redfish-exporter"
-redfish_exporter_name: "redfish_exporter"
+redfish_exporter_name: "redfish-exporter"
 redfish_exporter_port: 9220

@@ -29,6 +29,18 @@
       retries: 3
     log_options: "path=/var/log/containers/{{ minio_name }}.json"
     log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
+  tags: minio
+
+- name: enable and start minio service
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: "monitoring-{{ minio_name }}"
   tags: minio
 
 - name: wait for minio to be available
