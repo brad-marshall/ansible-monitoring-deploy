@@ -127,6 +127,7 @@ scrape_configs:
     static_configs:
       - targets:
 {% for host in groups['thanos'] %}
+        - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10902
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10904
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10906
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10909

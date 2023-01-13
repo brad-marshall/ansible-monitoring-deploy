@@ -19,6 +19,8 @@ redfish_exporter
 haproxy_exporter
 minio
 thanos
+loki
+promtail
 
 # Tags
 
@@ -30,6 +32,8 @@ There are multiple tags defined to allow for targetted rolling out - they could 
 * prometheus
 * minio
 * thanos
+* loki
+* promtail
 
 To only run one of the sections, for example the exporters:
 
@@ -51,7 +55,7 @@ Alertmanager is deployed, and currently has some basic alerting rules, but no no
 
 This Thanos deployment has been done using https://blog.ruanbekker.com/blog/2020/02/01/setup-thanos-on-docker-a-highly-available-prometheus/ as a guide.
 
-It initially deploys minio, thanos store, query and reciever components.
+It initially deploys minio, thanos store, query, compact and reciever components.
 
 # Loki
 
@@ -66,8 +70,6 @@ Useful links in figuring this out are:
 
 # TODO
 
-* Add thanos datasource to grafana
-* More thanos setup - add compactor, anything else
 * Better loki dashboards, include some for logs
   - variable for hostname and cotnainer to show logs?
 * Alertmanager rules - stub rules file with pointer to extra file people can edit - mount inside alertmanager container

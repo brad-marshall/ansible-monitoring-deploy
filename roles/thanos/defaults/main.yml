@@ -1,6 +1,7 @@
 ---
 thanos_container: "quay.io/thanos/thanos:v0.30.1"
 thanos_name: "thanos"
+compact_http_port: 10902
 query_grpc_port: 10903
 query_http_port: 10904
 store_grpc_port: 10905

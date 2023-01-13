@@ -102,8 +102,34 @@
       container_prefix: monitoring
   tags: thanos
 
+- name: Run thanos compact container
+  containers.podman.podman_container:
+    name: "{{ thanos_name }}-compact"
+    image: "{{ thanos_container }}"
+    state: started
+    #restart: true
+    command: >
+      compact --data-dir=/tmp/thanos-compact
+      --log.level=debug --objstore.config-file=/bucket.yml
+      --http-address=0.0.0.0:{{ compact_http_port }}
+      --http-grace-period=2m --consistency-delay=30m
+      --wait
+    ports:
+      - "{{ compact_http_port }}:{{ compact_http_port }}"
+    volume:
+      - "/etc/thanos/bucket.yml:/bucket.yml"
+    log_options: "path=/var/log/containers/{{ thanos_name }}-compact.json"
+    log_driver: k8s-file
+    generate_systemd:
+      path: /etc/systemd/system/
+      restart_policy: always
+      names: true
+      container_prefix: monitoring
+  tags: thanos
+
 - name: enable and start thanos services
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ thanos_name }}-{{ item }}"
@@ -112,3 +138,4 @@
     - query
     - receive
     - store
+    - compact
