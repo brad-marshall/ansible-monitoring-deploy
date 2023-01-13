@@ -24,6 +24,12 @@
   tags: grafana
   notify: Restart Grafana
 
+- name: create grafana thanos datasource template file
+  template: src=grafana-thanos-datasource.j2 dest=/etc/grafana/provisioning/datasources/thanos.yml
+  when: (groups['thanos'] is defined) and (groups['thanos'] | type_debug == 'list') and (groups['thanos'] | length > 0)
+  tags: grafana
+  notify: Restart Grafana
+
 - name: create grafana loki datasource template file
   template: src=grafana-loki-datasource.j2 dest=/etc/grafana/provisioning/datasources/loki.yml
   when: (groups['loki'] is defined) and (groups['loki'] | type_debug == 'list') and (groups['loki'] | length > 0)
@@ -50,10 +56,12 @@
     image: "{{ grafana_container }}"
     state: started
     restart: true
+    recreate: yes
     ports:
       - "{{ grafana_port }}:{{ grafana_port }}"
     volume:
       - "/etc/grafana/provisioning/datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml"
+      - "/etc/grafana/provisioning/datasources/thanos.yml:/etc/grafana/provisioning/datasources/thanos.yml"
       - "/etc/grafana/provisioning/datasources/loki.yml:/etc/grafana/provisioning/datasources/loki.yml"
       - "/etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards"
     log_options: "path=/var/log/containers/{{ grafana_name }}.json"

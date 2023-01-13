@@ -123,6 +123,15 @@ scrape_configs:
 {% endif %}
 
 {% if groups['thanos']|length > 0 %}
+  - job_name: "thanos"
+    static_configs:
+      - targets:
+{% for host in groups['thanos'] %}
+        - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10904
+        - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10906
+        - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10909
+{% endfor %}
+
 remote_write:
 - url: http://{{ hostvars[groups['thanos'][0]]['ansible_host'] }}:10908/api/v1/receive
 {% endif %}

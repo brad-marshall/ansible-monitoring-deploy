@@ -67,7 +67,7 @@ Useful links in figuring this out are:
 # TODO
 
 * Add thanos datasource to grafana
-* More thanos setup - add compactor, setup metrics
+* More thanos setup - add compactor, anything else
 * Better loki dashboards, include some for logs
   - variable for hostname and cotnainer to show logs?
 * Alertmanager rules - stub rules file with pointer to extra file people can edit - mount inside alertmanager container

@@ -9,11 +9,11 @@ deleteDatasources:
 # list of datasources to insert/update depending
 # whats available in the database
 datasources:
-{% for host in groups['prometheus'] %}
+{% for host in groups['thanos'] %}
    #prometheus {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 
   # <string, required> name of the datasource. Required
-- name: Prometheus - {{ hostvars[host]['ansible_hostname'] }}
+- name: Thanos - {{ hostvars[host]['ansible_hostname'] }}
   # <string, required> datasource type. Required
   type: prometheus
   # <string, required> access mode. direct or proxy. Required
@@ -21,7 +21,7 @@ datasources:
   # <int> org id. will default to orgId 1 if not specified
   orgId: 1
   # <string> url
-  url: http://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:9090
+  url: http://{{ hostvars[host]['ansible_default_ipv4']['address'] }}:10904
   # <string> database password, if used
   password:
   # <string> database user, if used
@@ -37,7 +37,7 @@ datasources:
   # <bool> enable/disable with credentials headers
   withCredentials:
   # <bool> mark as default datasource. Max one per org
-  isDefault: false
+  isDefault: true
   # <map> fields that will be converted to json and stored in json_data
   jsonData:
      graphiteVersion: "1.1"
