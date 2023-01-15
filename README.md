@@ -70,13 +70,14 @@ Useful links in figuring this out are:
 
 # TODO
 
+* Better docs and how to use
 * Better loki dashboards, include some for logs
   - variable for hostname and cotnainer to show logs?
 * Alertmanager rules - stub rules file with pointer to extra file people can edit - mount inside alertmanager container
 * Move generated ip lists to file_sd_config setup
 * Work out how to have different ipmi credentials for redfish exporter
 * Better handling of multiple prometheus servers - ie redfish exporter is hard coded to first prometheus host IP
-* Better docs and how to use
+* Consider thanos query-frontend and ruler as advanced setups
 
 ## Exporters
 
