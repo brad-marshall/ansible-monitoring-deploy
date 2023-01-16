@@ -2,3 +2,6 @@
 prometheus_container: "quay.io/prometheus/prometheus"
 prometheus_name: "prometheus"
 prometheus_port: 9090
+prometheus_base_path: "/mnt/containers"
+prometheus_data_path: "{{ prometheus_base_path }}/{{ prometheus_name }}/data"
+prometheus_mount_path: "/prometheus"

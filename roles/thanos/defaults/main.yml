@@ -9,3 +9,6 @@ store_http_port: 10906
 receive_grpc_port: 10907
 receive_remote_write_port: 10908
 receive_http_port: 10909
+thanos_base_path: "/mnt/containers"
+thanos_data_path: "{{ thanos_base_path }}/{{ thanos_name }}"
+thanos_mount_path: "/data"

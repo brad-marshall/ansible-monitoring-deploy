@@ -22,6 +22,23 @@
     mode: '0755'
   tags: thanos
 
+- name: Create prometheus mount dir
+  ansible.builtin.file:
+    path: "{{ thanos_base_path }}"
+    state: directory
+    mode: '0755'
+  tags: thanos
+
+- name: Create prometheus mount dir
+  ansible.builtin.file:
+    path: "{{ thanos_data_path }}/{{ item }}/data"
+    state: directory
+    mode: '0755'
+  tags: thanos
+  with_items:
+    - receive
+    - store
+
 - name: create thanos minio template file
   template: src=templates/minio-bucket.j2 dest=/etc/thanos/bucket.yml
   tags: thanos
@@ -43,6 +60,7 @@
       - "{{ store_http_port }}:{{ store_http_port }}"
     volume:
       - "/etc/thanos/bucket.yml:/bucket.yml"
+      - "{{ thanos_data_path }}/store/data:{{ thanos_mount_path }}:Z"
     log_options: "path=/var/log/containers/{{ thanos_name }}-store.json"
     log_driver: k8s-file
     generate_systemd:
@@ -72,6 +90,7 @@
       - "{{ receive_http_port }}:{{ receive_http_port }}"
     volume:
       - "/etc/thanos/bucket.yml:/bucket.yml"
+      - "{{ thanos_data_path }}/receive/data:{{ thanos_mount_path }}:Z"
     log_options: "path=/var/log/containers/{{ thanos_name }}-receieve.json"
     log_driver: k8s-file
     generate_systemd:

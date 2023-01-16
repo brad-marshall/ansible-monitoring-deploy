@@ -17,6 +17,22 @@
     mode: '0755'
   tags: prometheus
 
+- name: Create prometheus mount dir
+  ansible.builtin.file:
+    path: "{{ prometheus_base_path }}"
+    state: directory
+    mode: '0755'
+  tags: prometheus
+
+- name: Create prometheus mount dir
+  ansible.builtin.file:
+    path: "{{ prometheus_data_path }}"
+    state: directory
+    owner: "nobody"
+    group: "nobody"
+    mode: '0775'
+  tags: prometheus
+
 - name: Create prometheus alertmanager config dir
   ansible.builtin.file:
     path: /etc/prometheus/alertmanager
@@ -84,6 +100,7 @@
       - "{{ prometheus_port }}:{{ prometheus_port }}"
     volume:
       - "/etc/prometheus:/etc/prometheus"
+      - "{{ prometheus_data_path }}:{{ prometheus_mount_path }}:Z"
     log_options: "path=/var/log/containers/{{ prometheus_name }}.json"
     log_driver: k8s-file
     generate_systemd:

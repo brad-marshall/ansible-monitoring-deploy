@@ -78,7 +78,6 @@ grafana_group - used by grafana to set group permissions of dashboards etc to so
 
 # TODO
 
-* Make prometheus, thanos, minio etc storage a bind mount / volume for persistance
 * Change thanos storage to be external - ceph-radosgw first
 * Better docs and how to use
 * Better loki dashboards, include some for logs
