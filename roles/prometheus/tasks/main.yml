@@ -13,6 +13,13 @@
     mode: '0755'
   tags: prometheus
 
+- name: Create prometheus alertmanager config dir
+  ansible.builtin.file:
+    path: /etc/prometheus/alertmanager
+    state: directory
+    mode: '0755'
+  tags: prometheus
+
 - name: create prometheus template file
   template: src=prometheus.j2 dest=/etc/prometheus/prometheus.yml
   tags: prometheus
@@ -21,7 +28,7 @@
 - name: copy prometheus alertmanager rules
   ansible.builtin.copy:
     src: files/alertmanager/prometheus-exporter.yml
-    dest: /etc/prometheus/prometheus-exporter.yml
+    dest: /etc/prometheus/alertmanager/prometheus-exporter.yml
     mode: '0644'
   tags: prometheus
   notify: Restart Prometheus
@@ -29,7 +36,7 @@
 - name: copy node exporter alertmanager rules
   ansible.builtin.copy:
     src: files/alertmanager/node-exporter.yml
-    dest: /etc/prometheus/node-exporter.yml
+    dest: /etc/prometheus/alertmanager/node-exporter.yml
     mode: '0644'
   tags: prometheus
   notify: Restart Prometheus
@@ -37,7 +44,7 @@
 - name: copy prometheus alertmanager rules
   ansible.builtin.copy:
     src: "files/alertmanager/thanos-{{ item }}.yml"
-    dest: "/etc/prometheus/thanos-{{ item }}.yml"
+    dest: "/etc/prometheus/alertmanager/thanos-{{ item }}.yml"
     mode: '0644'
   tags: prometheus
   notify: Restart Prometheus
@@ -51,7 +58,15 @@
 - name: copy loki alertmanager rules
   ansible.builtin.copy:
     src: files/alertmanager/loki.yml
-    dest: /etc/prometheus/loki.yml
+    dest: /etc/prometheus/alertmanager/loki.yml
+    mode: '0644'
+  tags: prometheus
+  notify: Restart Prometheus
+
+- name: copy promtail alertmanager rules
+  ansible.builtin.copy:
+    src: files/alertmanager/promtail.yml
+    dest: /etc/prometheus/alertmanager/promtail.yml
     mode: '0644'
   tags: prometheus
   notify: Restart Prometheus

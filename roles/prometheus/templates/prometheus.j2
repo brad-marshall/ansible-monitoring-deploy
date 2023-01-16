@@ -19,20 +19,23 @@ alerting:
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
 {% if groups['alertmanager']|length > 0 %}
-    - /etc/prometheus/prometheus-exporter.yml
+    - /etc/prometheus/alertmanager/prometheus-exporter.yml
 {% if groups['node_exporter']|length > 0 %}
-    - /etc/prometheus/node-exporter.yml
+    - /etc/prometheus/alertmanager/node-exporter.yml
 {% endif %}
 {% if groups['thanos']|length > 0 %}
     # Rules taken from https://github.com/thanos-io/thanos/blob/main/examples/alerts/alerts.md
-    - /etc/prometheus/thanos-absent.yml
-    - /etc/prometheus/thanos-compact.yml
-    - /etc/prometheus/thanos-query.yml
-    - /etc/prometheus/thanos-receive.yml
-    - /etc/prometheus/thanos-store.yml
+    - /etc/prometheus/alertmanager/thanos-absent.yml
+    - /etc/prometheus/alertmanager/thanos-compact.yml
+    - /etc/prometheus/alertmanager/thanos-query.yml
+    - /etc/prometheus/alertmanager/thanos-receive.yml
+    - /etc/prometheus/alertmanager/thanos-store.yml
 {% endif %}
 {% if groups['loki']|length > 0 %}
-    - /etc/prometheus/loki.yml
+    - /etc/prometheus/alertmanager/loki.yml
+{% endif %}
+{% if groups['all']|length > 0 %}
+    - /etc/prometheus/alertmanager/promtail.yml
 {% endif %}
 {% endif %}
 
