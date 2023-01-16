@@ -15,7 +15,7 @@
   ansible.builtin.file:
     path: /etc/grafana/provisioning
     state: directory
-    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default('default') }}"
+    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default(grafana_group) }}"
     mode: '0775'
   tags: grafana
 
@@ -23,7 +23,7 @@
   ansible.builtin.file:
     path: /etc/grafana/provisioning/{{ item }}/
     state: directory
-    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default('default') }}"
+    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default(grafana_group) }}"
     mode: '0775'
   tags: grafana
   with_items:

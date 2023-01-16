@@ -57,6 +57,7 @@ This Thanos deployment has been done using https://blog.ruanbekker.com/blog/2020
 
 It initially deploys minio, thanos store, query, compact and reciever components.
 
+
 # Loki
 
 This deploys loki and promtail, and sets up a connection in grafana to talk to loki.
@@ -68,8 +69,17 @@ Useful links in figuring this out are:
 * https://mpolinowski.github.io/docs/DevOps/Provisioning/2021-04-07--loki-prometheus-grafana/2021-04-07/
 * https://open200.com/de/blog/loki-logs/
 
+# Special Variables
+
+## Hostvars
+
+ipmi_ip - used by redfish_exporter to generate list of targets
+grafana_group - used by grafana to set group permissions of dashboards etc to something the user can write to
+
 # TODO
 
+* Make prometheus, thanos, minio etc storage a bind mount / volume for persistance
+* Change thanos storage to be external - ceph-radosgw first
 * Better docs and how to use
 * Better loki dashboards, include some for logs
   - variable for hostname and cotnainer to show logs?
