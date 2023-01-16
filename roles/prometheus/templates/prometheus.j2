@@ -23,6 +23,17 @@ rule_files:
 {% if groups['node_exporter']|length > 0 %}
     - /etc/prometheus/node-exporter.yml
 {% endif %}
+{% if groups['thanos']|length > 0 %}
+    # Rules taken from https://github.com/thanos-io/thanos/blob/main/examples/alerts/alerts.md
+    - /etc/prometheus/thanos-absent.yml
+    - /etc/prometheus/thanos-compact.yml
+    - /etc/prometheus/thanos-query.yml
+    - /etc/prometheus/thanos-receive.yml
+    - /etc/prometheus/thanos-store.yml
+{% endif %}
+{% if groups['loki']|length > 0 %}
+    - /etc/prometheus/loki.yml
+{% endif %}
 {% endif %}
 
   # - "first_rules.yml"

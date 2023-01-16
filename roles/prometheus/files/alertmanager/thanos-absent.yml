@@ -1,0 +1,46 @@
+groups:
+- name: thanos-component-absent
+  rules:
+    - alert: ThanosCompactIsDown
+      annotations:
+        description: ThanosCompact has disappeared. Prometheus target for the component cannot be discovered.
+        runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompactisdown
+        summary: Thanos component has disappeared.
+      expr: |
+        absent(up{job=~".*thanos-compact.*"} == 1)
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: ThanosQueryIsDown
+      annotations:
+        description: ThanosQuery has disappeared. Prometheus target for the component cannot be discovered.
+        runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryisdown
+        summary: Thanos component has disappeared.
+      expr: |
+        absent(up{job=~".*thanos-query.*"} == 1)
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: ThanosReceiveIsDown
+      annotations:
+        description: ThanosReceive has disappeared. Prometheus target for the component cannot be discovered.
+        runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceiveisdown
+        summary: Thanos component has disappeared.
+      expr: |
+        absent(up{job=~".*thanos-receive.*"} == 1)
+      for: 5m
+      labels:
+        severity: critical
+
+    - alert: ThanosStoreIsDown
+      annotations:
+        description: ThanosStore has disappeared. Prometheus target for the component cannot be discovered.
+        runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoreisdown
+        summary: Thanos component has disappeared.
+      expr: |
+        absent(up{job=~".*thanos-store.*"} == 1)
+      for: 5m
+      labels:
+        severity: critical

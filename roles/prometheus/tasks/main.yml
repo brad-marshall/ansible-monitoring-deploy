@@ -34,6 +34,28 @@
   tags: prometheus
   notify: Restart Prometheus
 
+- name: copy prometheus alertmanager rules
+  ansible.builtin.copy:
+    src: "files/alertmanager/thanos-{{ item }}.yml"
+    dest: "/etc/prometheus/thanos-{{ item }}.yml"
+    mode: '0644'
+  tags: prometheus
+  notify: Restart Prometheus
+  with_items:
+    - absent
+    - compact
+    - query
+    - receive
+    - store
+
+- name: copy loki alertmanager rules
+  ansible.builtin.copy:
+    src: files/alertmanager/loki.yml
+    dest: /etc/prometheus/loki.yml
+    mode: '0644'
+  tags: prometheus
+  notify: Restart Prometheus
+
 - name: Run prometheus container
   containers.podman.podman_container:
     name: "{{ prometheus_name }}"
