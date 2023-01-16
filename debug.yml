@@ -5,34 +5,38 @@
 
 
   tasks:
-    - name:  Debug for node exporters
+    - name: debug for grafana_groups
       ansible.builtin.debug:
-        msg: "Node has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-      with_items: "{{ groups['node_exporter'] }}"
+        msg: "node {{ inventory_hostname }} has {{ hostvars[inventory_hostname]['grafana_group'] | default('default') }}"
 
-    - name: Debug for libvirt exporters
-      ansible.builtin.debug:
-        msg: "Libvirt has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-      with_items: "{{ groups['libvirt_exporter'] }}"
+    #- name:  Debug for node exporters
+    #  ansible.builtin.debug:
+    #    msg: "Node has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    #  with_items: "{{ groups['node_exporter'] }}"
 
-    - name: Debug for prometheus
-      ansible.builtin.debug:
-        msg: "Prometheus has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-      with_items: "{{ groups['prometheus'] }}"
+    #- name: Debug for libvirt exporters
+    #  ansible.builtin.debug:
+    #    msg: "Libvirt has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    #  with_items: "{{ groups['libvirt_exporter'] }}"
 
-    - name: Debug for prometheus
-      ansible.builtin.debug:
-        msg: "Prometheus has {{ hostvars[item] }}"
-      with_items: "{{ groups['prometheus'] }}"
+    #- name: Debug for prometheus
+    #  ansible.builtin.debug:
+    #    msg: "Prometheus has {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    #  with_items: "{{ groups['prometheus'] }}"
 
-    - name: debug of literal multiline
-      vars:
-        test: |
-          sh -c 'sh -s << EOF
-          mc config host add tmp
-          mc mb tmp/thanos
-          mc config host rm tmp
-          sleep 10000000
-          EOF'
-      debug:
-        var: test
+    #- name: Debug for prometheus
+    #  ansible.builtin.debug:
+    #    msg: "Prometheus has {{ hostvars[item] }}"
+    #  with_items: "{{ groups['prometheus'] }}"
+
+    #- name: debug of literal multiline
+    #  vars:
+    #    test: |
+    #      sh -c 'sh -s << EOF
+    #      mc config host add tmp
+    #      mc mb tmp/thanos
+    #      mc config host rm tmp
+    #      sleep 10000000
+    #      EOF'
+    #  debug:
+    #    var: test

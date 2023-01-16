@@ -1,4 +1,8 @@
 ---
+- name: Install podman
+  yum: pkg=podman
+       state=installed
+
 - name: Create container log dir
   ansible.builtin.file:
     path: /var/log/containers

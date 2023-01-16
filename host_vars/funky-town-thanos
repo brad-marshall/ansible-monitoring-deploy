@@ -1,0 +1,4 @@
+---
+ansible_host: 10.76.23.30
+ansible_user: brmarsha
+grafana_group: "admins@gpslab.cbr.redhat.com"

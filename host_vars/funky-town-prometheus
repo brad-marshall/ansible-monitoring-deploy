@@ -1,0 +1,4 @@
+---
+ansible_host: 10.76.23.31
+ansible_user: brmarsha
+

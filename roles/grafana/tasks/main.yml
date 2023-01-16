@@ -1,4 +1,8 @@
 ---
+- name: Install podman
+  yum: pkg=podman
+       state=installed
+
 - name: Create container log dir
   ansible.builtin.file:
     path: /var/log/containers
@@ -7,11 +11,19 @@
   tags: grafana
 
 # Set to group wheel and 775 to allow syncing of dashboards etc
-- name: Create grafana config dir
+- name: Create grafana provisioning dir
+  ansible.builtin.file:
+    path: /etc/grafana/provisioning
+    state: directory
+    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default('default') }}"
+    mode: '0775'
+  tags: grafana
+
+- name: Create grafana provisioning sub dirs
   ansible.builtin.file:
     path: /etc/grafana/provisioning/{{ item }}/
     state: directory
-    group: wheel
+    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default('default') }}"
     mode: '0775'
   tags: grafana
   with_items:
@@ -47,6 +59,9 @@
     src: files/dashboards
     dest: /etc/grafana/provisioning/
     times: false
+    perms: false
+    owner: false
+    group: false
   tags: grafana
   notify: Restart Grafana
 

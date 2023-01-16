@@ -1,4 +1,8 @@
 ---
+- name: Install podman
+  yum: pkg=podman
+       state=installed
+
 - name: Enable podman socket
   ansible.builtin.systemd:
     name: podman.socket
