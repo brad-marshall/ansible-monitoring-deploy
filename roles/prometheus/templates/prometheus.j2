@@ -55,6 +55,15 @@ scrape_configs:
    #prometheus {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 
+{% if groups['alertmanager']|length > 0 %}
+  - job_name: "alertmanager"
+    static_configs:
+      - targets:
+{% for host in groups['alertmanager'] %}
+        - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9093
+{% endfor %}
+{% endif %}
+
 {% if groups['node_exporter']|length > 0 %}
   - job_name: "node_exporter"
     static_configs:
@@ -134,13 +143,31 @@ scrape_configs:
 {% endif %}
 
 {% if groups['thanos']|length > 0 %}
-  - job_name: "thanos"
+  - job_name: "thanos-compact"
     static_configs:
       - targets:
 {% for host in groups['thanos'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10902
+{% endfor %}
+
+  - job_name: "thanos-query"
+    static_configs:
+      - targets:
+{% for host in groups['thanos'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10904
+{% endfor %}
+
+  - job_name: "thanos-store"
+    static_configs:
+      - targets:
+{% for host in groups['thanos'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10906
+{% endfor %}
+
+  - job_name: "thanos-receive"
+    static_configs:
+      - targets:
+{% for host in groups['thanos'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10909
 {% endfor %}
 
