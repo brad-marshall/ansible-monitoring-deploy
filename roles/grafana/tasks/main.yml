@@ -53,17 +53,85 @@
   tags: grafana
   notify: Restart Grafana
 
-- name: sync grafana dashboards
-  become: no
-  ansible.posix.synchronize:
-    src: files/dashboards
-    dest: /etc/grafana/provisioning/
-    times: false
-    perms: false
-    owner: false
-    group: false
+####
+# haproxy.json  libvirt-dashboard.json  loki-and-promtail.json  node-exporter-full_rev29.json  podman_rev1.json  prometheus-overview.json
+####
+
+- name: copy haproxy dashboard
+  ansible.builtin.copy:
+    src: files/dashboards/haproxy.json
+    dest: /etc/grafana/provisioning/dashboards/
+    owner: root
+    group: root
+    mode: '0664'
+  when: (groups['haproxy_exporter'] is defined) and (groups['haproxy_exporter'] | type_debug == 'list') and (groups['haproxy_exporter'] | length > 0)
   tags: grafana
   notify: Restart Grafana
+
+- name: copy libvirt dashboard
+  ansible.builtin.copy:
+    src: files/dashboards/libvirt-dashboard.json
+    dest: /etc/grafana/provisioning/dashboards/
+    owner: root
+    group: root
+    mode: '0664'
+  when: (groups['libvirt_exporter'] is defined) and (groups['libvirt_exporter'] | type_debug == 'list') and (groups['libvirt_exporter'] | length > 0)
+  tags: grafana
+  notify: Restart Grafana
+
+- name: copy node exporter dashboard
+  ansible.builtin.copy:
+    src: files/dashboards/node-exporter-full_rev29.json
+    dest: /etc/grafana/provisioning/dashboards/
+    owner: root
+    group: root
+    mode: '0664'
+  when: (groups['node_exporter'] is defined) and (groups['node_exporter'] | type_debug == 'list') and (groups['node_exporter'] | length > 0)
+  tags: grafana
+  notify: Restart Grafana
+
+- name: copy loki and promtail dashboard
+  ansible.builtin.copy:
+    src: files/dashboards/loki-and-promtail.json
+    dest: /etc/grafana/provisioning/dashboards/
+    owner: root
+    group: root
+    mode: '0664'
+  when: (groups['loki'] is defined) and (groups['loki'] | type_debug == 'list') and (groups['loki'] | length > 0)
+  tags: grafana
+  notify: Restart Grafana
+
+- name: copy podman exporter dashboard
+  ansible.builtin.copy:
+    src: files/dashboards/podman_rev1.json
+    dest: /etc/grafana/provisioning/dashboards/
+    owner: root
+    group: root
+    mode: '0664'
+  tags: grafana
+  notify: Restart Grafana
+
+- name: copy prometheus dashboard
+  ansible.builtin.copy:
+    src: files/dashboards/prometheus-overview.json
+    dest: /etc/grafana/provisioning/dashboards/
+    owner: root
+    group: root
+    mode: '0664'
+  tags: grafana
+  notify: Restart Grafana
+
+#- name: sync grafana dashboards
+#  become: no
+#  ansible.posix.synchronize:
+#    src: files/dashboards
+#    dest: /etc/grafana/provisioning/
+#    times: false
+#    perms: false
+#    owner: false
+#    group: false
+#  tags: grafana
+#  notify: Restart Grafana
 
 - name: Run grafana container
   containers.podman.podman_container:
