@@ -1,7 +1,7 @@
 type: S3
 config:
   bucket: thanos
-  endpoint: {{ hostvars[groups['minio'][0]]['ansible_host'] }}:9000
+  endpoint: {{ hostvars[groups[minio_group][0]]['ansible_host'] }}:9000
   insecure: true
   signature_version2: true
   access_key: {{ minio_access_key }}

@@ -6,6 +6,20 @@
     mode: '0755'
   tags: exporter, haproxy
 
+- name: Create minio mount dir
+  ansible.builtin.file:
+    path: "{{ minio_base_path }}"
+    state: directory
+    mode: '0755'
+  tags: minio
+
+- name: Create minio mount dir
+  ansible.builtin.file:
+    path: "{{ minio_data_path }}"
+    state: directory
+    mode: '0755'
+  tags: minio
+
 - name: Install podman
   yum: pkg=podman
        state=installed
@@ -22,6 +36,8 @@
       MINIO_SECRET_KEY: "{{ minio_secret_key }}"
     ports:
       - "{{ minio_port }}:{{ minio_port }}"
+    volume:
+      - "{{ minio_data_path }}:{{ minio_mount_path }}:Z"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -38,6 +54,7 @@
 
 - name: enable and start minio service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ minio_name }}"

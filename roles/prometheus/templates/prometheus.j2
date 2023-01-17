@@ -4,13 +4,13 @@ global:
   evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
   # scrape_timeout is set to the global default (10s).
 
-{% if groups['alertmanager']|length > 0 %}
+{% if groups[alertmanager_group]|length > 0 %}
 # Alertmanager configuration
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
-{% for host in groups['alertmanager'] %}
+{% for host in groups[alertmanager_group] %}
           - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9093
 {% endfor %}
           # - alertmanager:9093
@@ -18,12 +18,12 @@ alerting:
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
-{% if groups['alertmanager']|length > 0 %}
+{% if groups[alertmanager_group]|length > 0 %}
     - /etc/prometheus/alertmanager/prometheus-exporter.yml
-{% if groups['node_exporter']|length > 0 %}
+{% if groups[node_exporter_group]|length > 0 %}
     - /etc/prometheus/alertmanager/node-exporter.yml
 {% endif %}
-{% if groups['thanos']|length > 0 %}
+{% if groups[thanos_group]|length > 0 %}
     # Rules taken from https://github.com/thanos-io/thanos/blob/main/examples/alerts/alerts.md
     - /etc/prometheus/alertmanager/thanos-absent.yml
     - /etc/prometheus/alertmanager/thanos-compact.yml
@@ -31,10 +31,10 @@ rule_files:
     - /etc/prometheus/alertmanager/thanos-receive.yml
     - /etc/prometheus/alertmanager/thanos-store.yml
 {% endif %}
-{% if groups['loki']|length > 0 %}
+{% if groups[loki']|length > 0 %}
     - /etc/prometheus/alertmanager/loki.yml
 {% endif %}
-{% if groups['all']|length > 0 %}
+{% if groups[all']|length > 0 %}
     - /etc/prometheus/alertmanager/promtail.yml
 {% endif %}
 {% endif %}
@@ -54,57 +54,57 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-{% for host in groups['prometheus'] %}
+{% for host in groups[prometheus_group] %}
    #prometheus {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 {% endfor %}
 
-{% if groups['alertmanager']|length > 0 %}
+{% if groups[alertmanager_group]|length > 0 %}
   - job_name: "alertmanager"
     static_configs:
       - targets:
-{% for host in groups['alertmanager'] %}
+{% for host in groups[alertmanager_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9093
 {% endfor %}
 {% endif %}
 
-{% if groups['node_exporter']|length > 0 %}
+{% if groups[node_exporter_group]|length > 0 %}
   - job_name: "node_exporter"
     static_configs:
       - targets:
-{% for host in groups['node_exporter'] %}
+{% for host in groups[node_exporter_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9100
 {% endfor %}
 {% endif %}
 
-{% if groups['libvirt_exporter']|length > 0 %}
+{% if groups[libvirt_exporter_group]|length > 0 %}
   - job_name: "libvirt_exporter"
     static_configs:
       - targets:
-{% for host in groups['libvirt_exporter'] %}
+{% for host in groups[libvirt_exporter_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9177
 {% endfor %}
 {% endif %}
 
-{% if groups['podman_exporter']|length > 0 %}
+{% if groups[podman_exporter_group]|length > 0 %}
   - job_name: "podman_exporter"
     static_configs:
       - targets:
-{% for host in groups['podman_exporter'] %}
+{% for host in groups[podman_exporter_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9882
 {% endfor %}
 {% endif %}
 
-{% if groups['haproxy_exporter']|length > 0 %}
+{% if groups[haproxy_exporter_group]|length > 0 %}
   - job_name: "haproxy_exporter"
     static_configs:
       - targets:
-{% for host in groups['haproxy_exporter'] %}
+{% for host in groups[haproxy_exporter_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9101
 {% endfor %}
 {% endif %}
 
-{% if groups['redfish_exporter']|length > 0 %}
-  - job_name: 'redfish-exporter'
+{% if groups[redfish_exporter_group]|length > 0 %}
+  - job_name: 'redfish-exporter_group
     honor_labels: true
     # metrics_path defaults to '/metrics'
     metrics_path: /redfish
@@ -115,7 +115,7 @@ scrape_configs:
       job: ['redfish/openstack']
     static_configs:
       - targets:
-{% for host in groups['redfish_exporter'] %}
+{% for host in groups[redfish_exporter_group] %}
         - {{ hostvars[host]['ipmi_ip'] }}
 {% endfor %}
     relabel_configs:
@@ -124,57 +124,57 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: {{ hostvars[groups['prometheus'][0]]['ansible_host'] }}:9220
+        replacement: {{ hostvars[groups[prometheus_group][0]]['ansible_host'] }}:9220
 {% endif %}
 
-{% if groups['loki']|length > 0 %}
+{% if groups[loki']|length > 0 %}
   - job_name: "loki"
     static_configs:
       - targets:
-{% for host in groups['loki'] %}
+{% for host in groups[loki'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:3100
 {% endfor %}
 {% endif %}
 
-{% if groups['all']|length > 0 %}
+{% if groups[all']|length > 0 %}
   - job_name: "promtail"
     static_configs:
       - targets:
-{% for host in groups['all'] %}
+{% for host in groups[all'] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9080
 {% endfor %}
 {% endif %}
 
-{% if groups['thanos']|length > 0 %}
+{% if groups[thanos_group]|length > 0 %}
   - job_name: "thanos-compact"
     static_configs:
       - targets:
-{% for host in groups['thanos'] %}
+{% for host in groups[thanos_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10902
 {% endfor %}
 
   - job_name: "thanos-query"
     static_configs:
       - targets:
-{% for host in groups['thanos'] %}
+{% for host in groups[thanos_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10904
 {% endfor %}
 
   - job_name: "thanos-store"
     static_configs:
       - targets:
-{% for host in groups['thanos'] %}
+{% for host in groups[thanos_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10906
 {% endfor %}
 
   - job_name: "thanos-receive"
     static_configs:
       - targets:
-{% for host in groups['thanos'] %}
+{% for host in groups[thanos_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:10909
 {% endfor %}
 
 remote_write:
-- url: http://{{ hostvars[groups['thanos'][0]]['ansible_host'] }}:10908/api/v1/receive
+- url: http://{{ hostvars[groups[thanos_group][0]]['ansible_host'] }}:10908/api/v1/receive
 {% endif %}
 

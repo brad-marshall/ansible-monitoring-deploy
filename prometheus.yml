@@ -6,7 +6,7 @@
 
 ##### EXPORTERS #####
 - name: Deploy node exporter
-  hosts: node_exporter
+  hosts: "{{ node_exporter_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -14,7 +14,7 @@
   tags: exporter, node
 
 - name: Deploy libvirt exporter
-  hosts: libvirt_exporter
+  hosts: "{{ libvirt_exporter_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -22,7 +22,7 @@
   tags: exporter, libvirt
 
 - name: Deploy podman exporter
-  hosts: podman_exporter
+  hosts: "{{ podman_exporter_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -30,7 +30,7 @@
   tags: exporter, podman
 
 - name: Deploy redfish exporter
-  hosts: prometheus
+  hosts: "{{ prometheus_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -38,7 +38,7 @@
   tags: exporter, redfish
 
 - name: Deploy haproxy exporter
-  hosts: haproxy_exporter
+  hosts: "{{ haproxy_exporter_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -47,7 +47,7 @@
 
 ##### MINIO #####
 - name: Deploy minio
-  hosts: minio
+  hosts: "{{ minio_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -56,7 +56,7 @@
 
 ##### THANOS #####
 - name: Deploy thanos
-  hosts: thanos
+  hosts: "{{ thanos_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -65,7 +65,7 @@
 
 ##### LOKI #####
 - name: Deploy loki
-  hosts: loki
+  hosts: "{{ loki_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -74,7 +74,7 @@
 
 ##### PROMTAIL #####
 - name: Deploy promtail
-  hosts: all
+  hosts: "{{ promtail_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -83,7 +83,7 @@
 
 #### PROMETHEUS #####
 - name: Deploy prometheus alertmanager
-  hosts: alertmanager
+  hosts: "{{ alertmanager_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -91,7 +91,7 @@
   tags: alertmanager
 
 - name: Deploy prometheus
-  hosts: prometheus
+  hosts: "{{ prometheus_group }}"
   become: yes
   gather_facts: no
   roles:
@@ -100,7 +100,7 @@
 
 #### GRAFANA #####
 - name: Deploy grafana
-  hosts: grafana
+  hosts: "{{ grafana_group }}"
   become: yes
   gather_facts: no
   roles:

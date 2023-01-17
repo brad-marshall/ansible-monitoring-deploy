@@ -9,7 +9,7 @@ deleteDatasources:
 # list of datasources to insert/update depending
 # whats available in the database
 datasources:
-{% for host in groups['thanos'] %}
+{% for host in groups[thanos_group] %}
    #prometheus {{ hostvars[host]['ansible_default_ipv4']['address'] }}
 
   # <string, required> name of the datasource. Required
