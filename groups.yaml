@@ -1,7 +1,4 @@
 ---
-# file: /etc/ansible/group_vars/all
-# this is the site wide default
-
 prometheus_group: prometheus
 alertmanager_group: alertmanager
 grafana_group: grafana
@@ -14,7 +11,3 @@ thanos_group: thanos
 minio_group: minio
 loki_group: loki
 promtail_group: all
-
-# Minio access stuff - should encrypt or similar
-minio_access_key: EXAMPLEKEY
-minio_secret_key: SECRETKEY

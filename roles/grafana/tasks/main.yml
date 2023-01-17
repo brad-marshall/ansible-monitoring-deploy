@@ -15,7 +15,7 @@
   ansible.builtin.file:
     path: /etc/grafana/provisioning
     state: directory
-    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default(grafana_group) }}"
+    group: "{{ hostvars[inventory_hostname]['grafana_group_perms'] | default(grafana_group_perms) }}"
     mode: '0775'
   tags: grafana
 
@@ -23,7 +23,7 @@
   ansible.builtin.file:
     path: /etc/grafana/provisioning/{{ item }}/
     state: directory
-    group: "{{ hostvars[inventory_hostname]['grafana_group'] | default(grafana_group) }}"
+    group: "{{ hostvars[inventory_hostname]['grafana_group_perms'] | default(grafana_group_perms) }}"
     mode: '0775'
   tags: grafana
   with_items:
@@ -32,19 +32,19 @@
 
 - name: create grafana prometheus datasource template file
   template: src=grafana-prometheus-datasource.j2 dest=/etc/grafana/provisioning/datasources/prometheus.yml
-  when: (groups['prometheus'] is defined) and (groups['prometheus'] | type_debug == 'list') and (groups['prometheus'] | length > 0)
+  when: (groups[prometheus_group] is defined) and (groups[prometheus_group] | type_debug == 'list') and (groups[prometheus_group] | length > 0)
   tags: grafana
   notify: Restart Grafana
 
 - name: create grafana thanos datasource template file
   template: src=grafana-thanos-datasource.j2 dest=/etc/grafana/provisioning/datasources/thanos.yml
-  when: (groups['thanos'] is defined) and (groups['thanos'] | type_debug == 'list') and (groups['thanos'] | length > 0)
+  when: (groups[thanos_group] is defined) and (groups[thanos_group] | type_debug == 'list') and (groups[thanos_group] | length > 0)
   tags: grafana
   notify: Restart Grafana
 
 - name: create grafana loki datasource template file
   template: src=grafana-loki-datasource.j2 dest=/etc/grafana/provisioning/datasources/loki.yml
-  when: (groups['loki'] is defined) and (groups['loki'] | type_debug == 'list') and (groups['loki'] | length > 0)
+  when: (groups[loki_group] is defined) and (groups[loki_group] | type_debug == 'list') and (groups[loki_group] | length > 0)
   tags: grafana
   notify: Restart Grafana
 
@@ -64,7 +64,7 @@
     owner: root
     group: root
     mode: '0664'
-  when: (groups['haproxy_exporter'] is defined) and (groups['haproxy_exporter'] | type_debug == 'list') and (groups['haproxy_exporter'] | length > 0)
+  when: (groups[haproxy_exporter_group] is defined) and (groups[haproxy_exporter_group] | type_debug == 'list') and (groups[haproxy_exporter_group] | length > 0)
   tags: grafana
   notify: Restart Grafana
 
@@ -75,7 +75,7 @@
     owner: root
     group: root
     mode: '0664'
-  when: (groups['libvirt_exporter'] is defined) and (groups['libvirt_exporter'] | type_debug == 'list') and (groups['libvirt_exporter'] | length > 0)
+  when: (groups[libvirt_exporter_group] is defined) and (groups[libvirt_exporter_group] | type_debug == 'list') and (groups[libvirt_exporter_group] | length > 0)
   tags: grafana
   notify: Restart Grafana
 
@@ -86,7 +86,7 @@
     owner: root
     group: root
     mode: '0664'
-  when: (groups['node_exporter'] is defined) and (groups['node_exporter'] | type_debug == 'list') and (groups['node_exporter'] | length > 0)
+  when: (groups[node_exporter_group] is defined) and (groups[node_exporter_group] | type_debug == 'list') and (groups[node_exporter_group] | length > 0)
   tags: grafana
   notify: Restart Grafana
 
@@ -97,7 +97,7 @@
     owner: root
     group: root
     mode: '0664'
-  when: (groups['loki'] is defined) and (groups['loki'] | type_debug == 'list') and (groups['loki'] | length > 0)
+  when: (groups[loki_group] is defined) and (groups[loki_group] | type_debug == 'list') and (groups[loki_group] | length > 0)
   tags: grafana
   notify: Restart Grafana
 

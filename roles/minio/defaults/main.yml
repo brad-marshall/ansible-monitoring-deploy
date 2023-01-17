@@ -1,8 +1,14 @@
 ---
+# default inventory group name
+minio_group: "minio"
 minio_container: "docker.io/minio/minio"
 minio_name: "minio"
 minio_port: 9000
 minio_path: "/export"
-minio_host: "{{ hostvars[groups['minio'][0]]['ansible_host'] }}"
+minio_host: "{{ hostvars[groups[minio_group][0]]['ansible_host'] }}"
 mc_url: "https://dl.min.io/client/mc/release/linux-amd64/mc"
 mc_path: "/usr/local/bin/mc"
+minio_base_path: "/mnt/containers"
+minio_data_path: "{{ minio_base_path }}/{{ minio_name }}/export"
+minio_mount_path: "/export"
+

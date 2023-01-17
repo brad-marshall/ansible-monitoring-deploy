@@ -111,8 +111,8 @@
       --grpc-address=0.0.0.0:{{ query_grpc_port }} --grpc-grace-period=1s
       --http-address=0.0.0.0:{{ query_http_port }} --http-grace-period=1s
       --query.replica-label=prometheus
-      --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ store_grpc_port }}
-      --store={{ hostvars[groups['thanos'][0]]['ansible_host'] }}:{{ receive_grpc_port }}
+      --store={{ hostvars[groups[thanos_group][0]]['ansible_host'] }}:{{ store_grpc_port }}
+      --store={{ hostvars[groups[thanos_group][0]]['ansible_host'] }}:{{ receive_grpc_port }}
     ports:
       - "{{ query_grpc_port }}:{{ query_grpc_port }}"
       - "{{ query_http_port }}:{{ query_http_port }}"
@@ -156,7 +156,7 @@
     state: started
     enabled: yes
     name: "monitoring-{{ thanos_name }}-{{ item }}"
-  tags: grafana
+  tags: thanos
   with_items:
     - query
     - receive
