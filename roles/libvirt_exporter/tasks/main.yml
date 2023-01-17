@@ -10,37 +10,37 @@
     mode: '0755'
   tags: exporter
 
-- name: Install policy tools
-  yum: pkg=policycoreutils-python-utils
-       state=installed
-  tags: exporter
-
-- name: Remove SELinux policy package
-  command: semodule -r ansible-libvirtexporter
-  failed_when: false
-  tags: exporter
-
-- name: Copy SELinux type enforcement file
-  copy: src=ansible-libvirtexporter.te
-        dest=/tmp/
-  tags: exporter
-
-- name: Compile SELinux module file
-  command: checkmodule -M -m -o /tmp/ansible-libvirtexporter.mod /tmp/ansible-libvirtexporter.te
-  tags: exporter
-
-- name: Build SELinux policy package
-  command: semodule_package -o /tmp/ansible-libvirtexporter.pp -m /tmp/ansible-libvirtexporter.mod                                                                                                    
-  tags: exporter
-
-- name: Load SELinux policy package
-  command: semodule -i /tmp/ansible-libvirtexporter.pp
-  tags: exporter
-
-- name: Remove temporary files
-  file: path=/tmp/ansible-libvirtexporter.*
-        state=absent
-  tags: exporter
+#- name: Install policy tools
+#  yum: pkg=policycoreutils-python-utils
+#       state=installed
+#  tags: exporter
+#
+#- name: Remove SELinux policy package
+#  command: semodule -r ansible-libvirtexporter
+#  failed_when: false
+#  tags: exporter
+#
+#- name: Copy SELinux type enforcement file
+#  copy: src=ansible-libvirtexporter.te
+#        dest=/tmp/
+#  tags: exporter
+#
+#- name: Compile SELinux module file
+#  command: checkmodule -M -m -o /tmp/ansible-libvirtexporter.mod /tmp/ansible-libvirtexporter.te
+#  tags: exporter
+#
+#- name: Build SELinux policy package
+#  command: semodule_package -o /tmp/ansible-libvirtexporter.pp -m /tmp/ansible-libvirtexporter.mod
+#  tags: exporter
+#
+#- name: Load SELinux policy package
+#  command: semodule -i /tmp/ansible-libvirtexporter.pp
+#  tags: exporter
+#
+#- name: Remove temporary files
+#  file: path=/tmp/ansible-libvirtexporter.*
+#        state=absent
+#  tags: exporter
 
 - name: Run libvirt exporter container
   containers.podman.podman_container:
@@ -51,6 +51,7 @@
       - "{{ libvirt_exporter_port }}:{{ libvirt_exporter_port }}"
     volume:
       - "/var/run/libvirt:/var/run/libvirt:z"
+    security_opt: label=disable
     log_options: "path=/var/log/containers/{{ libvirt_exporter_name }}.json"
     log_driver: k8s-file
     generate_systemd:
@@ -62,6 +63,7 @@
 
 - name: enable and start libvirt exporter service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ libvirt_exporter_name }}"
