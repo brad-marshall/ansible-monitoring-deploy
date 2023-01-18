@@ -1,0 +1,19 @@
+---
+prometheus_group: prometheus
+alertmanager_group: alertmanager
+grafana_group: grafana
+node_exporter_group: all
+libvirt_exporter_group: nova_libvirt_guests
+podman_exporter_group: all
+redfish_exporter_group: prometheus
+haproxy_exporter_group: haproxy
+thanos_group: thanos
+minio_group: minio
+loki_group: loki
+promtail_group: all
+
+
+# rabbitmq - basically controller
+# mysql - basically controller
+# Controller
+# Compute

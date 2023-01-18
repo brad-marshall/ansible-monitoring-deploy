@@ -7,20 +7,6 @@ funky-town-prometheus
 [grafana]
 funky-town-thanos
 
-[node_exporter]
-funky-town-thanos
-funky-town-prometheus
-
-[libvirt_exporter]
-
-[podman_exporter]
-funky-town-thanos
-funky-town-prometheus
-
-[redfish_exporter]
-
-[haproxy_exporter]
-
 [thanos]
 funky-town-thanos
 
