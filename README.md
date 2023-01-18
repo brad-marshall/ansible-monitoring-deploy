@@ -8,6 +8,10 @@ $ ansible-playbook -i inventory/testing prometheus.yml  -D -K  -e "@groups.yml"
 
 This uses groups to allocate what hosts gets what part of the monitoring solution, they are mostly self explanatory.
 
+To install the required ansible collections:
+
+$ ansible-galaxy collection install -r collections/requirements.yml 
+
 # Groups
 
 The deployment relies on correct allocation of groups to the right hosts, which is done via a set of extra variables we pass through.  If you don't have a group defined,  it won't run.  The critical ones to make sure you have are prometheus, grafana, and whatever exporters you want.  If you want thanos, youalso need thanos (obviously) and minio.  There are plans to allow configuration of an external storage for thanos at some stage.
