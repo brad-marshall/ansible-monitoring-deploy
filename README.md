@@ -1,14 +1,20 @@
 # Ansible Deployment of Prometheus, Thanos, Grafana and Exporters
 
-Run up prometheus, thanos, minio grafana and various exporters.
+Run up prometheus, thanos, minio, grafana and various exporters.
 
 Once configured, a run is done something like:
 
-$ ansible-playbook -i inventory/testing prometheus.yml  -D -K
+$ ansible-playbook -i inventory/testing prometheus.yml  -D -K  -e "@groups.yml"
 
 This uses groups to allocate what hosts gets what part of the monitoring solution, they are mostly self explanatory.
 
-# Group Names
+# Groups
+
+The deployment relies on correct allocation of groups to the right hosts, which is done via a set of extra variables we pass through.  If you don't have a group defined,  it won't run.  The critical ones to make sure you have are prometheus, grafana, and whatever exporters you want.  If you want thanos, youalso need thanos (obviously) and minio.  There are plans to allow configuration of an external storage for thanos at some stage.
+
+The thanos deployment is pretty basic so far, consisting of store, receive, query and compact.  There is no HA, but this would be a reasonably easy extension.
+
+## Group Names
 prometheus
 alertmanager
 grafana
@@ -21,6 +27,23 @@ minio
 thanos
 loki
 promtail
+
+## Example YAML config
+
+This maps where each role will be deployed, and is also used in template files in the like to consolidate all the details together.
+
+prometheus_group: prometheus
+alertmanager_group: alertmanager
+grafana_group: grafana
+node_exporter_group: node_exporter
+libvirt_exporter_group: libvirt_exporter
+podman_exporter_group: all
+redfish_exporter_group: prometheus
+haproxy_exporter_group: haproxy_exporter
+thanos_group: thanos
+minio_group: minio
+loki_group: loki
+promtail_group: all
 
 # Tags
 
