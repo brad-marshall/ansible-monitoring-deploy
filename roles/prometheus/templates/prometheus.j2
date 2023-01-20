@@ -31,10 +31,10 @@ rule_files:
     - /etc/prometheus/alertmanager/thanos-receive.yml
     - /etc/prometheus/alertmanager/thanos-store.yml
 {% endif %}
-{% if groups[loki']|length > 0 %}
+{% if groups[loki_group]|length > 0 %}
     - /etc/prometheus/alertmanager/loki.yml
 {% endif %}
-{% if groups[all']|length > 0 %}
+{% if groups[promtail_group]|length > 0 %}
     - /etc/prometheus/alertmanager/promtail.yml
 {% endif %}
 {% endif %}
@@ -104,7 +104,7 @@ scrape_configs:
 {% endif %}
 
 {% if groups[redfish_exporter_group]|length > 0 %}
-  - job_name: 'redfish-exporter_group
+  - job_name: "redfish-exporter_group"
     honor_labels: true
     # metrics_path defaults to '/metrics'
     metrics_path: /redfish
@@ -127,20 +127,20 @@ scrape_configs:
         replacement: {{ hostvars[groups[prometheus_group][0]]['ansible_host'] }}:9220
 {% endif %}
 
-{% if groups[loki']|length > 0 %}
+{% if groups[loki_group]|length > 0 %}
   - job_name: "loki"
     static_configs:
       - targets:
-{% for host in groups[loki'] %}
+{% for host in groups[loki_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:3100
 {% endfor %}
 {% endif %}
 
-{% if groups[all']|length > 0 %}
+{% if groups[promtail_group]|length > 0 %}
   - job_name: "promtail"
     static_configs:
       - targets:
-{% for host in groups[all'] %}
+{% for host in groups[promtail_group] %}
         - {{ hostvars[host]['ansible_default_ipv4']['address'] }}:9080
 {% endfor %}
 {% endif %}

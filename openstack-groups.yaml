@@ -5,7 +5,7 @@ grafana_group: grafana
 node_exporter_group: all
 libvirt_exporter_group: nova_libvirt_guests
 podman_exporter_group: all
-redfish_exporter_group: prometheus
+redfish_exporter_group: redfish_exporter
 haproxy_exporter_group: haproxy
 thanos_group: thanos
 minio_group: minio
