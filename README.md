@@ -70,6 +70,14 @@ $ ansible-playbook -i inventory/testing prometheus.yml  -D -K --tags exporter
 
 This relies on a hostvar against the hosts in the redfish_exporter group called ipmi_ip.  If you require a port, just add it here.  The actual exporter runs on the prometheus host.
 
+The redfish password is currently undefined in the repo, you need to pass it in as an extra variable so it is not stored unencrypted, something like:
+
+  $ ansible-playbook -i inventory/testing prometheus.yml -D -K -e "@groups.yaml" -e "redfish_password=$REDFISH_PASS" --tags redfish
+
+You can also pass redfish_user and redfish_job to update those if required, otherwise they default to 'redfish' and 'redfish/openstack' respectively.
+
+This should be improved to store the variable encrypted, but this is a todo.
+
 # Dashboards
 
 Grafana dashboards are stored in files/dashboards, simply place them in the directory and the next run of grafana will populate them out.  They can be edited, but it won't let you save back - but you can export the json.  The workflow for updating these is to put the json back into ansible and roll it back out.  This could probably be improved.
@@ -111,6 +119,7 @@ grafana_group - used by grafana to set group permissions of dashboards etc to so
   - variable for hostname and cotnainer to show logs?
 * Alertmanager rules - stub rules file with pointer to extra file people can edit - mount inside alertmanager container
 * Move generated ip lists to file_sd_config setup
+* Store redfish credentials encrypted
 * Work out how to have different ipmi credentials for redfish exporter
 * Better handling of multiple prometheus servers - ie redfish exporter is hard coded to first prometheus host IP
 * Consider thanos query-frontend and ruler as advanced setups

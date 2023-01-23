@@ -17,6 +17,11 @@
     mode: '0755'
   tags: exporter
 
+- name: check if password is defined
+  ansible.builtin.fail:
+    msg: "Ansible variable redfish_password is not defined, this is required."
+  when: redfish_password is undefined
+
 - name: create redfish template file
   template: src=redfish-config.j2 dest=/etc/prometheus/redfish-config.yml
   tags: exporter

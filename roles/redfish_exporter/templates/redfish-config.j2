@@ -1,0 +1,5 @@
+listen_port: 9220
+username: '{{ redfish_user|default("redfish") }}'
+password: '{{ redfish_password }}'
+timeout: 10
+job: '{{ redfish_job|default("redfish/openstack") }}'
