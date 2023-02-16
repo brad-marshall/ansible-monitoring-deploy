@@ -112,6 +112,7 @@
 
 - name: enable and start prometheus service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ prometheus_name }}"

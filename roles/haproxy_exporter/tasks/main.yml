@@ -30,6 +30,7 @@
    
 - name: enable and start haproxy exporter service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ haproxy_exporter_name }}"

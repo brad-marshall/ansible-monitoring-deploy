@@ -47,6 +47,7 @@
 
 - name: enable and start redfish exporter service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ redfish_exporter_name }}"

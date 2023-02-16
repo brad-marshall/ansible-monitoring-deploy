@@ -28,6 +28,7 @@
 
 - name: enable and start alertmaner service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ prometheus_alertmanager_name }}"

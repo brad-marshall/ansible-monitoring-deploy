@@ -46,6 +46,7 @@
 
 - name: enable and start promtail service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ promtail_name }}"

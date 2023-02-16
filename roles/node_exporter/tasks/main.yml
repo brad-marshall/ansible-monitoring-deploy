@@ -28,6 +28,7 @@
 
 - name: enable and start node exporter service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ node_exporter_name }}"
