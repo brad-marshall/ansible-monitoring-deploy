@@ -121,6 +121,19 @@
   tags: grafana
   notify: Restart Grafana
 
+# If you want to copy all files from a subdir up
+#- name: copy prometheus dashboard
+#  ansible.builtin.copy:
+#    src: "{{ item }}"
+#    dest: /etc/grafana/provisioning/dashboards/
+#    owner: root
+#    group: root
+#    mode: '0664'
+#  with_fileglob:
+#    - "files/dashboards/*.json"
+#  tags: grafana
+#  notify: Restart Grafana
+
 #- name: sync grafana dashboards
 #  become: no
 #  ansible.posix.synchronize:
@@ -130,6 +143,7 @@
 #    perms: false
 #    owner: false
 #    group: false
+#    rsync_path: "sudo rsync"
 #  tags: grafana
 #  notify: Restart Grafana
 
