@@ -34,6 +34,7 @@
 
 - name: enable and start podman exporter service
   ansible.builtin.systemd:
+    daemon_reload: true
     state: started
     enabled: yes
     name: "monitoring-{{ podman_exporter_name }}"
