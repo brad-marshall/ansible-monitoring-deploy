@@ -3,3 +3,5 @@ grafana_container: "docker.io/grafana/grafana"
 grafana_name: "grafana"
 grafana_port: 3000
 grafana_group_perms: "wheel"
+grafana_datasource_dir: "/etc/grafana/provisioning/datasources"
+grafana_dashboard_dir: "/etc/grafana/provisioning/dashboards"

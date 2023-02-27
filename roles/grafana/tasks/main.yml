@@ -57,82 +57,111 @@
 # haproxy.json  libvirt-dashboard.json  loki-and-promtail.json  node-exporter-full_rev29.json  podman_rev1.json  prometheus-overview.json
 ####
 
-- name: copy haproxy dashboard
-  ansible.builtin.copy:
-    src: files/dashboards/haproxy.json
-    dest: /etc/grafana/provisioning/dashboards/
-    owner: root
-    group: root
-    mode: '0664'
-  when: (groups[haproxy_exporter_group] is defined) and (groups[haproxy_exporter_group] | type_debug == 'list') and (groups[haproxy_exporter_group] | length > 0)
-  tags: grafana
-  notify: Restart Grafana
-
-- name: copy libvirt dashboard
-  ansible.builtin.copy:
-    src: files/dashboards/libvirt-dashboard.json
-    dest: /etc/grafana/provisioning/dashboards/
-    owner: root
-    group: root
-    mode: '0664'
-  when: (groups[libvirt_exporter_group] is defined) and (groups[libvirt_exporter_group] | type_debug == 'list') and (groups[libvirt_exporter_group] | length > 0)
-  tags: grafana
-  notify: Restart Grafana
-
-- name: copy node exporter dashboard
-  ansible.builtin.copy:
-    src: files/dashboards/node-exporter-full_rev29.json
-    dest: /etc/grafana/provisioning/dashboards/
-    owner: root
-    group: root
-    mode: '0664'
-  when: (groups[node_exporter_group] is defined) and (groups[node_exporter_group] | type_debug == 'list') and (groups[node_exporter_group] | length > 0)
-  tags: grafana
-  notify: Restart Grafana
-
-- name: copy loki and promtail dashboard
-  ansible.builtin.copy:
-    src: files/dashboards/loki-and-promtail.json
-    dest: /etc/grafana/provisioning/dashboards/
-    owner: root
-    group: root
-    mode: '0664'
-  when: (groups[loki_group] is defined) and (groups[loki_group] | type_debug == 'list') and (groups[loki_group] | length > 0)
-  tags: grafana
-  notify: Restart Grafana
-
-- name: copy podman exporter dashboard
-  ansible.builtin.copy:
-    src: files/dashboards/podman_rev1.json
-    dest: /etc/grafana/provisioning/dashboards/
-    owner: root
-    group: root
-    mode: '0664'
-  tags: grafana
-  notify: Restart Grafana
-
-- name: copy prometheus dashboard
-  ansible.builtin.copy:
-    src: files/dashboards/prometheus-overview.json
-    dest: /etc/grafana/provisioning/dashboards/
-    owner: root
-    group: root
-    mode: '0664'
-  tags: grafana
-  notify: Restart Grafana
-
-# If you want to copy all files from a subdir up
-#- name: copy prometheus dashboard
+#- name: copy haproxy dashboard
 #  ansible.builtin.copy:
-#    src: "{{ item }}"
+#    src: files/dashboards/haproxy.json
 #    dest: /etc/grafana/provisioning/dashboards/
 #    owner: root
 #    group: root
 #    mode: '0664'
-#  with_fileglob:
-#    - "files/dashboards/*.json"
+#  when: (groups[haproxy_exporter_group] is defined) and (groups[haproxy_exporter_group] | type_debug == 'list') and (groups[haproxy_exporter_group] | length > 0)
 #  tags: grafana
 #  notify: Restart Grafana
+#
+#- name: copy libvirt dashboard
+#  ansible.builtin.copy:
+#    src: files/dashboards/libvirt-dashboard.json
+#    dest: /etc/grafana/provisioning/dashboards/
+#    owner: root
+#    group: root
+#    mode: '0664'
+#  when: (groups[libvirt_exporter_group] is defined) and (groups[libvirt_exporter_group] | type_debug == 'list') and (groups[libvirt_exporter_group] | length > 0)
+#  tags: grafana
+#  notify: Restart Grafana
+#
+#- name: copy node exporter dashboard
+#  ansible.builtin.copy:
+#    src: files/dashboards/node-exporter-full_rev29.json
+#    dest: /etc/grafana/provisioning/dashboards/
+#    owner: root
+#    group: root
+#    mode: '0664'
+#  when: (groups[node_exporter_group] is defined) and (groups[node_exporter_group] | type_debug == 'list') and (groups[node_exporter_group] | length > 0)
+#  tags: grafana
+#  notify: Restart Grafana
+#
+#- name: copy loki and promtail dashboard
+#  ansible.builtin.copy:
+#    src: files/dashboards/loki-and-promtail.json
+#    dest: /etc/grafana/provisioning/dashboards/
+#    owner: root
+#    group: root
+#    mode: '0664'
+#  when: (groups[loki_group] is defined) and (groups[loki_group] | type_debug == 'list') and (groups[loki_group] | length > 0)
+#  tags: grafana
+#  notify: Restart Grafana
+#
+#- name: copy podman exporter dashboard
+#  ansible.builtin.copy:
+#    src: files/dashboards/podman_rev1.json
+#    dest: /etc/grafana/provisioning/dashboards/
+#    owner: root
+#    group: root
+#    mode: '0664'
+#  tags: grafana
+#  notify: Restart Grafana
+#
+#- name: copy prometheus dashboard
+#  ansible.builtin.copy:
+#    src: files/dashboards/prometheus-overview.json
+#    dest: /etc/grafana/provisioning/dashboards/
+#    owner: root
+#    group: root
+#    mode: '0664'
+#  tags: grafana
+#  notify: Restart Grafana
+
+- name: file debugging
+  ansible.builtin.debug:
+    msg: "dir is {{ item | dirname | basename }}, file is {{ item | basename }}"
+  with_fileglob:
+    - "{{ role_path }}/files/dashboards/*"
+  tags: grafana
+
+#- name: Get file directories
+#  find:
+#    paths: "{{ role_path }}/files/dashboards/"
+#    file_type: directory
+#  register: dir_paths
+#  tags: grafana
+
+- name: create prometheus dashboard dirs
+  ansible.builtin.file:
+    path: "/etc/grafana/promvisioning/dashboards/{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - Exporter
+    - Loki
+    - Prometheus
+  tags: grafana
+  #notify: Restart Grafana
+
+# If you want to copy all files from a subdir up
+- name: copy prometheus dashboard
+  ansible.builtin.copy:
+    src: "dashboards/{{ item | dirname | basename }}/{{ item | basename }}"
+    dest: "/etc/grafana/provisioning/dashboards/{{ item | dirname | basename }}/"
+    owner: root
+    group: root
+    mode: '0664'
+  with_fileglob:
+    #- "{{ dir_paths.files.path }}"
+    - "{{ role_path }}/files/dashboards/Exporter/*"
+    - "{{ role_path }}/files/dashboards/Loki/*"
+    - "{{ role_path }}/files/dashboards/Prometheus/*"
+  tags: grafana
+  notify: Restart Grafana
 
 #- name: sync grafana dashboards
 #  become: no

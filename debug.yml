@@ -1,4 +1,21 @@
 ---
+- name: gather file paths
+  hosts: localhost
+
+  tasks:
+
+    - name: Get file directories
+      find:
+        paths: "{{ playbook_dir }}/files/dashboards/"
+        file_type: directory
+      register: dir_paths
+
+    #- name: dir debugging
+    #  ansible.builtin.debug:
+    #    msg: "dirs are {{ item.path }}"
+    #  with_items:
+    #    - "{{ dir_paths.files }}"
+
 - name: Debug testing
   hosts: all
   become: yes
@@ -8,6 +25,20 @@
     - name: debug for grafana_groups
       ansible.builtin.debug:
         msg: "node {{ inventory_hostname }} has {{ hostvars[inventory_hostname]['grafana_group'] | default('default') }}"
+
+    #- name: file debugging
+    #  ansible.builtin.debug:
+    #    msg: files are {{ item }}
+    #  with_fileglob:
+    #    - "files/dashboards/*"
+    #  tags: grafana
+
+    - name: dir debugging
+      ansible.builtin.debug:
+        msg: "dirs are {{ item.path }}"
+      with_items:
+        - "{{ dir_paths.files }}"
+      tags: grafana
 
     #- name:  Debug for node exporters
     #  ansible.builtin.debug:
