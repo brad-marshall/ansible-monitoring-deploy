@@ -1,4 +1,4 @@
 ---
-prometheus_alertmanager_container: "quay.io/prometheus/alertmanager"
+prometheus_alertmanager_container: "quay.io/prometheus/alertmanager:v0.27.0"
 prometheus_alertmanager_name: "alertmanager"
 prometheus_alertmanager_port: 9093

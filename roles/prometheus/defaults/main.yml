@@ -1,5 +1,5 @@
 ---
-prometheus_container: "quay.io/prometheus/prometheus"
+prometheus_container: "quay.io/prometheus/prometheus:v2.45.4"
 prometheus_name: "prometheus"
 prometheus_port: 9090
 prometheus_base_path: "/mnt/containers"

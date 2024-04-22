@@ -1,5 +1,5 @@
 ---
-grafana_container: "docker.io/grafana/grafana"
+grafana_container: "docker.io/grafana/grafana:10.4.2"
 grafana_name: "grafana"
 grafana_port: 3000
 grafana_group_perms: "wheel"
